@@ -71,3 +71,44 @@ plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+# Gráfica de varianza en función de la cantidad de tiradas
+plt.figure(figsize=(10, 6))
+
+# Trazar una curva por cada corrida con la varianza acumulada
+todas_las_varianzas_acumuladas = []
+for idx, corrida in enumerate(corridas):
+    varianzas = []
+    for i in range(1, cantidad_tiradas + 1):
+        muestra = corrida[:i]
+        varianza = obtener_varianza(muestra) if i > 1 else 0
+        varianzas.append(varianza)
+    todas_las_varianzas_acumuladas.append(varianzas)
+    plt.plot(range(1, cantidad_tiradas + 1), varianzas, alpha=0.9, label=f"Corrida {idx + 1}")
+
+plt.xlabel("Cantidad de tiradas")
+plt.ylabel("Varianza del valor obtenido")
+plt.title(f"Varianza acumulada por corrida hasta cada tirada")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Calcular la varianza promedio en función de las tiradas
+varianzas_promedio = np.mean(todas_las_varianzas_acumuladas, axis=0)
+
+# Gráfica de varianza promedio en función de la cantidad de tiradas
+plt.figure(figsize=(10, 6))
+plt.plot(range(1, cantidad_tiradas + 1), varianzas_promedio, label="Varianza promedio")
+
+# Valor esperado de la varianza para una distribución uniforme de 0 a 36
+valor_esperado_varianza = ((37**2) - 1) / 12
+plt.axhline(valor_esperado_varianza, color='red', linestyle='--', label=f'Valor esperado ({valor_esperado_varianza:.2f})')
+
+plt.xlabel("Cantidad de tiradas")
+plt.ylabel("Varianza promedio del valor obtenido")
+plt.title("Varianza promedio acumulada hasta cada tirada")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
