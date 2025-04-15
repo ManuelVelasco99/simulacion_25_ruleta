@@ -60,7 +60,7 @@ for idx, corrida in enumerate(corridas):
     desviaciones_estandar = []
     for i in range(1, cantidad_tiradas + 1):
         muestra = corrida[:i]
-        desviacion = np.std(muestra)
+        desviacion = obtener_desviacion_estandar(muestra)
         desviaciones_estandar.append(desviacion)
     plt.plot(range(1, cantidad_tiradas + 1), desviaciones_estandar, alpha=0.9, label=f"Corrida {idx + 1}")
 
