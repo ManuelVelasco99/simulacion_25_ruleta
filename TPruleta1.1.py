@@ -98,15 +98,15 @@ plt.show()
 plt.figure(figsize=(10, 6))
 
 # Trazar una curva por cada corrida con la varianza acumulada
-todas_las_varianzas_acumuladas = []
+varianzas_de_las_corridas = []
 for idx, corrida in enumerate(corridas):
-    varianzas = []
+    varianzas_de_la_corrida = []
     for i in range(1, cantidad_tiradas + 1):
         muestra = corrida[:i]
         varianza = obtener_varianza(muestra) if i > 1 else 0
-        varianzas.append(varianza)
-    todas_las_varianzas_acumuladas.append(varianzas)
-    plt.plot(range(1, cantidad_tiradas + 1), varianzas, alpha=0.9, label=f"Corrida {idx + 1}")
+        varianzas_de_la_corrida.append(varianza)
+    varianzas_de_las_corridas.append(varianzas_de_la_corrida)
+    plt.plot(range(1, cantidad_tiradas + 1), varianzas_de_la_corrida, alpha=0.9, label=f"Corrida {idx + 1}")
 
 plt.xlabel("Cantidad de tiradas")
 plt.ylabel("Varianza del valor obtenido")
@@ -117,7 +117,7 @@ plt.tight_layout()
 plt.show()
 
 # Calcular la varianza promedio en función de las tiradas
-varianzas_promedio = np.mean(todas_las_varianzas_acumuladas, axis=0)
+varianzas_promedio = np.mean(varianzas_de_las_corridas, axis=0)
 
 # Gráfica de varianza promedio en función de la cantidad de tiradas
 plt.figure(figsize=(10, 6))
