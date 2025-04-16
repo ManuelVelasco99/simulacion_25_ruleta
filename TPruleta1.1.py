@@ -82,6 +82,9 @@ def graficar_desviacion_estandar():
         todas_las_desviaciones_estandar.append(desviaciones_estandar)
         plt.plot(range(1, cantidad_tiradas + 1), desviaciones_estandar, alpha=0.9, label=f"Corrida {idx + 1}")
 
+    # Valor esperado de la desviación estandar para una distribución uniforme de 0 a 36
+    valor_esperado_desviacion_estandar = math.sqrt(((37**2) - 1) / 12)
+    plt.axhline(valor_esperado_desviacion_estandar, color='red', linestyle='--', label=f'Valor esperado ({valor_esperado_desviacion_estandar:.2f})')
     plt.xlabel("Cantidad de tiradas")
     plt.ylabel("Desviación estándar del valor obtenido")
     plt.title(f"Desviación estándar acumulada por corrida hasta cada tirada")
@@ -98,7 +101,6 @@ def graficar_desviacion_estandar():
     plt.plot(range(1, cantidad_tiradas + 1), desviacion_estandar_promedio, label="Desviación estándar promedio")
 
     # Valor esperado de la desviación estandar para una distribución uniforme de 0 a 36
-    valor_esperado_desviacion_estandar = math.sqrt(((37**2) - 1) / 12)
     plt.axhline(valor_esperado_desviacion_estandar, color='red', linestyle='--', label=f'Valor esperado ({valor_esperado_desviacion_estandar:.2f})')
 
     plt.xlabel("Cantidad de tiradas")
@@ -124,6 +126,9 @@ def graficar_varianza():
         varianzas_de_las_corridas.append(varianzas_de_la_corrida)
         plt.plot(range(1, cantidad_tiradas + 1), varianzas_de_la_corrida, alpha=0.9, label=f"Corrida {idx + 1}")
 
+        # Valor esperado de la varianza para una distribución uniforme de 0 a 36
+    valor_esperado_varianza = ((37**2) - 1) / 12
+    plt.axhline(valor_esperado_varianza, color='red', linestyle='--', label=f'Valor esperado ({valor_esperado_varianza:.2f})')
     plt.xlabel("Cantidad de tiradas")
     plt.ylabel("Varianza del valor obtenido")
     plt.title(f"Varianza acumulada por corrida hasta cada tirada")
@@ -142,7 +147,6 @@ def graficar_varianza():
     plt.plot(range(1, cantidad_tiradas + 1), varianzas_promedio, label="Varianza promedio")
 
     # Valor esperado de la varianza para una distribución uniforme de 0 a 36
-    valor_esperado_varianza = ((37**2) - 1) / 12
     plt.axhline(valor_esperado_varianza, color='red', linestyle='--', label=f'Valor esperado ({valor_esperado_varianza:.2f})')
 
     plt.xlabel("Cantidad de tiradas")
