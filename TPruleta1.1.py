@@ -2,6 +2,7 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import math
 
 #PARAMETROS
 cantidad_tiradas = int(sys.argv[2]) # -c cantidad_tiradas
@@ -56,17 +57,38 @@ plt.show()
 plt.figure(figsize=(10, 6))
 
 # Trazar una curva por cada corrida con la desviación estándar acumulada
+todas_las_desviaciones_estandar = []
 for idx, corrida in enumerate(corridas):
     desviaciones_estandar = []
     for i in range(1, cantidad_tiradas + 1):
         muestra = corrida[:i]
         desviacion = obtener_desviacion_estandar(muestra)
         desviaciones_estandar.append(desviacion)
+    todas_las_desviaciones_estandar.append(desviaciones_estandar)
     plt.plot(range(1, cantidad_tiradas + 1), desviaciones_estandar, alpha=0.9, label=f"Corrida {idx + 1}")
 
 plt.xlabel("Cantidad de tiradas")
 plt.ylabel("Desviación estándar del valor obtenido")
 plt.title(f"Desviación estándar acumulada por corrida hasta cada tirada")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Calcular la desviación estándar promedio en función de las tiradas
+desviacion_estandar_promedio = np.mean(todas_las_desviaciones_estandar, axis=0)
+
+# Gráfica de la desviación estándar promedio en función de la cantidad de tiradas
+plt.figure(figsize=(10, 6))
+plt.plot(range(1, cantidad_tiradas + 1), desviacion_estandar_promedio, label="Desviación estándar promedio")
+
+# Valor esperado de la desviación estandar para una distribución uniforme de 0 a 36
+valor_esperado_desviacion_estandar = math.sqrt(((37**2) - 1) / 12)
+plt.axhline(valor_esperado_desviacion_estandar, color='red', linestyle='--', label=f'Valor esperado ({valor_esperado_desviacion_estandar:.2f})')
+
+plt.xlabel("Cantidad de tiradas")
+plt.ylabel("Desviación estándar promedio del valor obtenido")
+plt.title("Desviación estándar promedio acumulada hasta cada tirada")
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
