@@ -195,10 +195,30 @@ def graficar_promedio():
     plt.tight_layout()
     plt.show()
 
-#PARAMETROS
+if len(sys.argv) != 7 or sys.argv[1] != "-c" or sys.argv[3] != "-n" or sys.argv[5] != "-e":
+    print("La cantidad de argumentos o su orden es incorrecta.\n")
+    print("Uso: python/python3 TPruleta1.1.py -c <cantidad_de_tiradas>[int] -n <cantidad_de_corridas>[int] -e "
+          "<numero_elegido>[int 0-36]\n")
+    print("Ejemplo: python/python3 TPruleta1.1.py -c 1000 -n 10 -e 8")
+    exit(1)
+
+# PARAMETROS
 cantidad_tiradas = int(sys.argv[2]) # -c cantidad_tiradas
 cantidad_corridas = int(sys.argv[4]) # -n cantidad_corridas
 numero_elegido = int(sys.argv[6]) # -e numero_elegido
+
+# Validación
+if (cantidad_tiradas < 1):
+    print("El número de tiradas debe ser mayor a 0.")
+    exit(1)
+
+if (cantidad_corridas < 1):
+    print("El número de corridas debe ser mayor a 0.")
+    exit(1)
+
+if not (0 <= numero_elegido <= 36):
+    print("El número elegido debe estar entre 0 y 36.")
+    exit(1)
 
 # Generamos las corridas
 corridas = generar_corridas()
