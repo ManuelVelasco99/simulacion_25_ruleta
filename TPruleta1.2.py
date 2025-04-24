@@ -1,111 +1,175 @@
 import random
-import matplotlib.pyplot as plt
-import numpy as np
-import sys
-import math
 
-valores_ruleta = {
-    "rojo": [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36],
-    "negro": [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35],
-    "impar": [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35],
-    "par": [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36],
-    "menor": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
-    "mayor": [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
-    "doc1": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "doc2": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
-    "doc3": [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
-    "col1": [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34],
-    "col2": [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],
-    "col3": [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36]
-}
+class ContextoEstrategia:
+    def __init__(self, patrimonio_actual, apuesta):
+        self.patrimonio_actual = patrimonio_actual
+        self.apuesta = apuesta
 
-capital_inicial = 10000
-apuesta_inicial = 100
-def generar_corrida():
-    numeros = range(0, 37)
-    return [random.choice(numeros) for _ in range(cantidad_tiradas)]
+class Estrategia:
+    def __init__(self, contexto):
+        self.contexto = contexto
 
-def generar_corridas():
-    corridas = []
-    for _ in range(cantidad_corridas):
-        corridas.append(generar_corrida())
-    return corridas
+    def calcular_siguiente_apuesta(self, gano):
+        raise NotImplementedError()
 
-# PARAMETROS
-cantidad_tiradas = int(sys.argv[2]) # -c cantidad_tiradas
-cantidad_corridas = int(sys.argv[4]) # -n cantidad_corridas
-numero_elegido = sys.argv[6] # -e numero_elegido
-tipo_estrategia =  sys.argv[8]# -s tipo de estrategia
-tipo_capital = sys.argv[10]# -a tipo de capital
+class MartingalaEstrategia(Estrategia):
+    def __init__(self, contexto):
+        super().__init__(contexto)
+        self.apuesta_actual = contexto.apuesta
 
-valores_posibles_apuesta= [
-    'rojo','negro','impar','par','mayor','menor','doc1','doc2','doc3','col1','col2','col3'
-]
-valores_posibles_apuesta.extend([str(i) for i in range(37)])
-valores_posibles_estrategia = [
-    'm','d','f','o'
-]
-valores_posibles_capital = [
-    'm','d','f','o'
-]
+    def calcular_siguiente_apuesta(self, gano):
+        if not gano:
+            self.apuesta_actual *= 2
+        else:
+            self.apuesta_actual = self.contexto.apuesta
 
-# Validación
-if (cantidad_tiradas < 1):
-    print("El número de tiradas debe ser mayor a 0.")
-    exit(1)
+        if self.apuesta_actual > self.contexto.patrimonio_actual:
+            self.apuesta_actual = self.contexto.patrimonio_actual
 
-if (cantidad_corridas < 1):
-    print("El número de corridas debe ser mayor a 0.")
-    exit(1)
-if numero_elegido not in valores_posibles_apuesta:
-    print("El valor ingresado debe ser un número entre 0 y 36 o alguno de los siguientes valores: 'rojo','negro','impar','par','mayor','menor','doc1','doc2','doc3','col1','col2','col3'")
-    exit(1)
-#@TODO agregar validaciones capital y estrategia
+        return self.apuesta_actual
 
-# Estrategia y capital
+class ParoliEstrategia(Estrategia):
+    def __init__(self, contexto):
+        super().__init__(contexto)
+        self.apuesta_actual = contexto.apuesta
 
-# print(f""" Simulación de una Ruleta  \n
-#       "Número de Tiradas: {cantidad_tiradas} \n
-#       "Número de Corridas: {cantidad_corridas} \n
-#       "Número Elegido: {numero_elegido} \n
-#       "Estrategia: {tipo_estrategia} \n
-#       "Tipo de Capital: {tipo_capital} \n""")
+    def calcular_siguiente_apuesta(self, gano):
+        if gano:
+            self.apuesta_actual *= 2
+        else:
+            self.apuesta_actual = self.contexto.apuesta
 
-# Generamos las corridas
-corridas = generar_corridas()
+        if self.apuesta_actual > self.contexto.patrimonio_actual:
+            self.apuesta_actual = self.contexto.patrimonio_actual
 
-def es_tirada_ganadora(tirada):
-    if numero_elegido in ([str(i) for i in range(37)]):
-        return tirada == int(numero_elegido)
-    if tirada in valores_ruleta[numero_elegido]:
-        return True
-    else:
+        return self.apuesta_actual
+
+class DalamberEstrategia(Estrategia):
+    def __init__(self, contexto):
+        super().__init__(contexto)
+        self.apuesta_actual = contexto.apuesta
+
+    def calcular_siguiente_apuesta(self, gano):
+        if not gano:
+            self.apuesta_actual += apuesta
+        elif self.apuesta_actual > apuesta:
+            self.apuesta_actual -= apuesta
+
+        if self.apuesta_actual > self.contexto.patrimonio_actual:
+            self.apuesta_actual = self.contexto.patrimonio_actual
+
+        return self.apuesta_actual
+
+class FibonacciEstrategia(Estrategia):
+    def __init__(self, contexto):
+        super().__init__(contexto)
+        self.indice_fibonacci = 0
+        self.secuencia_fibonacci = [1, 1]
+
+    def calcular_siguiente_apuesta(self, gano):
+        if not gano:
+            self.indice_fibonacci += 1
+            if self.indice_fibonacci >= len(self.secuencia_fibonacci):
+                self.secuencia_fibonacci.append(
+                    self.secuencia_fibonacci[-1] + self.secuencia_fibonacci[-2]
+                )
+        elif self.indice_fibonacci > 1:
+            self.indice_fibonacci -= 2
+        else:
+            self.indice_fibonacci = 0
+
+        apuesta_actual = self.secuencia_fibonacci[self.indice_fibonacci] * self.contexto.apuesta
+        if apuesta_actual > self.contexto.patrimonio_actual:
+            apuesta_actual = self.contexto.patrimonio_actual
+
+        return apuesta_actual
+
+class Jugador:
+    def __init__(self, eleccion, patrimonio_actual, tipo_estrategia, tipo_capital, apuesta):
+        self.eleccion = eleccion
+        self.patrimonio_actual = patrimonio_actual
+        self.tipo_estrategia = tipo_estrategia
+        self.tipo_capital = tipo_capital
+        self.apuesta = apuesta
+        self.estrategia = self.determinar_estrategia()
+
+    def determinar_estrategia(self):
+        contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta)
+        if self.tipo_estrategia.lower() == "martingala":
+            return MartingalaEstrategia(contexto)
+        elif self.tipo_estrategia.lower() == "fibonacci":
+            return FibonacciEstrategia(contexto)
+        elif self.tipo_estrategia.lower() == "dalamber":
+            return DalamberEstrategia(contexto)
+        elif self.tipo_estrategia.lower() == "paroli":
+            return ParoliEstrategia(contexto)
+        return MartingalaEstrategia(contexto)
+
+class Ruleta:
+    def __init__(self, jugador, cantidad_tiradas, cantidad_corridas):
+        self.jugador = jugador
+        self.cantidad_tiradas = cantidad_tiradas
+        self.cantidad_corridas = cantidad_corridas
+        self.generador_numeros = random.Random()
+        self.valores_por_eleccion = {
+            "rojo": [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36],
+            "negro": [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35],
+            "impar": [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35],
+            "par": [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36],
+            "menor": list(range(1, 19)),
+            "mayor": list(range(19, 37)),
+            "doc1": list(range(1, 13)),
+            "doc2": list(range(13, 25)),
+            "doc3": list(range(25, 37)),
+            "col1": [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34],
+            "col2": [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],
+            "col3": [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],
+        }
+
+    def girar_ruleta(self):
+        return self.generador_numeros.randint(0, 36)
+
+    def atino_numero(self, numero):
+        if isinstance(self.jugador.eleccion, int):
+            return numero == self.jugador.eleccion
+        elif isinstance(self.jugador.eleccion, str):
+            return numero in self.valores_por_eleccion.get(self.jugador.eleccion, [])
         return False
-    
 
-def girar_ruleta(indice_corrida,tirada):
-    #@TODO
-    #apuesta
-    
-    #si capital infinito return True
-    #si capital bancarrota return False
-    return
+    def actualizar_patrimonio(self, gano):
+        if not gano:
+            self.jugador.patrimonio_actual -= self.jugador.apuesta
+        else:
+            if isinstance(self.jugador.eleccion, int):
+                pago = self.jugador.apuesta * 35
+            elif self.jugador.eleccion in ["rojo", "negro", "par", "impar", "mayor", "menor"]:
+                pago = self.jugador.apuesta
+            elif self.jugador.eleccion.startswith("doc") or self.jugador.eleccion.startswith("col"):
+                pago = self.jugador.apuesta * 2
+            else:
+                raise ValueError("Tipo de elección no soportado")
+            self.jugador.patrimonio_actual += pago + self.jugador.apuesta
 
-capital_corridas = []
+    def empezar_juego(self):
+        patrimonio_inicial = self.jugador.patrimonio_actual
+        apuesta_inicial = self.jugador.apuesta
+        for i, corrida in enumerate(range(self.cantidad_corridas)):
+            print(f"Corrida: {i}")
+            self.jugador.patrimonio_actual = patrimonio_inicial
+            self.jugador.apuesta = apuesta_inicial
+            for _ in range(self.cantidad_tiradas):
+                numero = self.girar_ruleta()
+                gano = self.atino_numero(numero)
+                self.actualizar_patrimonio(gano)
+                self.jugador.apuesta = self.jugador.estrategia.calcular_siguiente_apuesta(gano)
+                print(f"Resultado: {numero}, Patrimonio: {self.jugador.patrimonio_actual}, Apuesta: {self.jugador.apuesta}, Gano: {gano}")
 
-for i,corrida in enumerate(corridas):
-    capital = capital_inicial
-    apuesta = apuesta_inicial
-    for j,tirada in enumerate(corrida):
-        #
-        #if tipo_estrategia == 'm':
-            #if j != 0 :
-                #if es_tirada_ganadora(corrida[j-1]):
-
-
-        gano = es_tirada_ganadora(tirada)
-        print(tirada,gano,numero_elegido)
-        #
-        if not girar_ruleta(i,tirada,capital):
-            break
-
+cantidad_tiradas = 10
+cantidad_corridas = 2
+eleccion = "mayor"
+tipo_estrategia = "Paroli"
+tipo_capital = "infinito"
+apuesta = 100
+jugador = Jugador(eleccion, 100_000, tipo_estrategia, tipo_capital, apuesta)
+ruleta = Ruleta(jugador, cantidad_tiradas, cantidad_corridas)
+ruleta.empezar_juego()
