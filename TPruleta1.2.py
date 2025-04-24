@@ -1,9 +1,10 @@
 import random
 
 class ContextoEstrategia:
-    def __init__(self, patrimonio_actual, apuesta):
+    def __init__(self, patrimonio_actual, apuesta, tipo_capital):
         self.patrimonio_actual = patrimonio_actual
         self.apuesta = apuesta
+        self.tipo_capital = tipo_capital
 
 class Estrategia:
     def __init__(self, contexto):
@@ -21,9 +22,9 @@ class MartingalaEstrategia(Estrategia):
         if not gano:
             self.apuesta_actual *= 2
         else:
-            self.apuesta_actual = self.contexto.apuesta
+            self.apuesta_actual = apuesta
 
-        if self.apuesta_actual > self.contexto.patrimonio_actual:
+        if self.contexto.tipo_capital == "finito" and self.apuesta_actual > self.contexto.patrimonio_actual:
             self.apuesta_actual = self.contexto.patrimonio_actual
 
         return self.apuesta_actual
@@ -37,9 +38,9 @@ class ParoliEstrategia(Estrategia):
         if gano:
             self.apuesta_actual *= 2
         else:
-            self.apuesta_actual = self.contexto.apuesta
+            self.apuesta_actual = apuesta
 
-        if self.apuesta_actual > self.contexto.patrimonio_actual:
+        if self.contexto.tipo_capital == "finito" and self.apuesta_actual > self.contexto.patrimonio_actual:
             self.apuesta_actual = self.contexto.patrimonio_actual
 
         return self.apuesta_actual
@@ -55,7 +56,7 @@ class DalamberEstrategia(Estrategia):
         elif self.apuesta_actual > apuesta:
             self.apuesta_actual -= apuesta
 
-        if self.apuesta_actual > self.contexto.patrimonio_actual:
+        if self.contexto.tipo_capital == "finito" and self.apuesta_actual > self.contexto.patrimonio_actual:
             self.apuesta_actual = self.contexto.patrimonio_actual
 
         return self.apuesta_actual
@@ -78,8 +79,10 @@ class FibonacciEstrategia(Estrategia):
         else:
             self.indice_fibonacci = 0
 
-        apuesta_actual = self.secuencia_fibonacci[self.indice_fibonacci] * self.contexto.apuesta
-        if apuesta_actual > self.contexto.patrimonio_actual:
+        print(f"Indice Fibonacci: {self.indice_fibonacci}")
+        print(f"Secuencia Fibonacci: {self.secuencia_fibonacci}")
+        apuesta_actual = self.secuencia_fibonacci[self.indice_fibonacci] * apuesta
+        if self.contexto.tipo_capital == "finito" and apuesta_actual > self.contexto.patrimonio_actual:
             apuesta_actual = self.contexto.patrimonio_actual
 
         return apuesta_actual
@@ -94,7 +97,7 @@ class Jugador:
         self.estrategia = self.determinar_estrategia()
 
     def determinar_estrategia(self):
-        contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta)
+        contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital)
         if self.tipo_estrategia.lower() == "martingala":
             return MartingalaEstrategia(contexto)
         elif self.tipo_estrategia.lower() == "fibonacci":
@@ -104,6 +107,9 @@ class Jugador:
         elif self.tipo_estrategia.lower() == "paroli":
             return ParoliEstrategia(contexto)
         return MartingalaEstrategia(contexto)
+
+    def actualizar_estrategia(self):
+        self.estrategia.contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital)
 
 class Ruleta:
     def __init__(self, jugador, cantidad_tiradas, cantidad_corridas):
@@ -128,6 +134,12 @@ class Ruleta:
 
     def girar_ruleta(self):
         return self.generador_numeros.randint(0, 36)
+
+    def puede_seguir_jugando(self):
+        if self.jugador.tipo_capital == "infinito":
+            return True
+
+        return self.jugador.patrimonio_actual > 0 and self.jugador.apuesta <= self.jugador.patrimonio_actual
 
     def atino_numero(self, numero):
         if isinstance(self.jugador.eleccion, int):
@@ -154,22 +166,25 @@ class Ruleta:
         patrimonio_inicial = self.jugador.patrimonio_actual
         apuesta_inicial = self.jugador.apuesta
         for i, corrida in enumerate(range(self.cantidad_corridas)):
-            print(f"Corrida: {i}")
             self.jugador.patrimonio_actual = patrimonio_inicial
             self.jugador.apuesta = apuesta_inicial
             for _ in range(self.cantidad_tiradas):
                 numero = self.girar_ruleta()
                 gano = self.atino_numero(numero)
                 self.actualizar_patrimonio(gano)
+                self.jugador.actualizar_estrategia()
+                print(f"Apuesta: {self.jugador.apuesta}")
                 self.jugador.apuesta = self.jugador.estrategia.calcular_siguiente_apuesta(gano)
-                print(f"Resultado: {numero}, Patrimonio: {self.jugador.patrimonio_actual}, Apuesta: {self.jugador.apuesta}, Gano: {gano}")
+                print(f"Patrimonio: {self.jugador.patrimonio_actual}, Gano: {gano}")
+                if not self.puede_seguir_jugando():
+                    break
 
 cantidad_tiradas = 10
-cantidad_corridas = 2
+cantidad_corridas = 1
 eleccion = "mayor"
-tipo_estrategia = "Paroli"
+tipo_estrategia = "Fibonacci"
 tipo_capital = "infinito"
-apuesta = 100
+apuesta = 1000
 jugador = Jugador(eleccion, 100_000, tipo_estrategia, tipo_capital, apuesta)
 ruleta = Ruleta(jugador, cantidad_tiradas, cantidad_corridas)
 ruleta.empezar_juego()
