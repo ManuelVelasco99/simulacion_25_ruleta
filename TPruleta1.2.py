@@ -1,4 +1,5 @@
 import random
+import sys
 import matplotlib.pyplot as plt # Importar matplotlib
 import numpy as np # Importar numpy
 
@@ -26,7 +27,7 @@ class MartingalaEstrategia(Estrategia):
         else:
             self.apuesta_actual = apuesta
 
-        if self.contexto.tipo_capital == "finito" and self.apuesta_actual > self.contexto.patrimonio_actual:
+        if self.contexto.tipo_capital == "f" and self.apuesta_actual > self.contexto.patrimonio_actual:
             self.apuesta_actual = self.contexto.patrimonio_actual
 
         return self.apuesta_actual
@@ -42,7 +43,7 @@ class ParoliEstrategia(Estrategia):
         else:
             self.apuesta_actual = apuesta
 
-        if self.contexto.tipo_capital == "finito" and self.apuesta_actual > self.contexto.patrimonio_actual:
+        if self.contexto.tipo_capital == "f" and self.apuesta_actual > self.contexto.patrimonio_actual:
             self.apuesta_actual = self.contexto.patrimonio_actual
 
         return self.apuesta_actual
@@ -58,7 +59,7 @@ class DalamberEstrategia(Estrategia):
         elif self.apuesta_actual > apuesta:
             self.apuesta_actual -= apuesta
 
-        if self.contexto.tipo_capital == "finito" and self.apuesta_actual > self.contexto.patrimonio_actual:
+        if self.contexto.tipo_capital == "f" and self.apuesta_actual > self.contexto.patrimonio_actual:
             self.apuesta_actual = self.contexto.patrimonio_actual
 
         return self.apuesta_actual
@@ -82,7 +83,7 @@ class FibonacciEstrategia(Estrategia):
             self.indice_fibonacci = 0
 
         apuesta_actual = self.secuencia_fibonacci[self.indice_fibonacci] * apuesta
-        if self.contexto.tipo_capital == "finito" and apuesta_actual > self.contexto.patrimonio_actual:
+        if self.contexto.tipo_capital == "f" and apuesta_actual > self.contexto.patrimonio_actual:
             apuesta_actual = self.contexto.patrimonio_actual
 
         return apuesta_actual
@@ -119,6 +120,7 @@ class Ruleta:
         self.generador_numeros = random.Random()
         self.historial_capital_corridas = [] # Nuevo: para guardar historial de capital
         self.historial_apuestas_corridas = [] # Nuevo: para guardar historial de apuestas
+        self.historial_resultados_corridas = []  # Nuevo: para guardar si ganó o perdió cada tirada
         self.valores_por_eleccion = {
             "rojo": [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36],
             "negro": [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35],
@@ -138,7 +140,7 @@ class Ruleta:
         return self.generador_numeros.randint(0, 36)
 
     def puede_seguir_jugando(self):
-        if self.jugador.tipo_capital == "infinito":
+        if self.jugador.tipo_capital == "i":
             return True
 
         return self.jugador.patrimonio_actual > 0 and self.jugador.apuesta <= self.jugador.patrimonio_actual
@@ -169,6 +171,7 @@ class Ruleta:
         apuesta_inicial = self.jugador.apuesta
         self.historial_apuestas_corridas = [] # Limpiar historial al empezar
         self.historial_capital_corridas = [] # Limpiar historial de capital al empezar
+        self.historial_resultados_corridas = [] 
 
         for i, corrida in enumerate(range(self.cantidad_corridas)):
             print(f"Corrida: {i}")
@@ -179,6 +182,7 @@ class Ruleta:
             
             historial_apuestas_corrida_actual = [] # Historial para esta corrida
             historial_capital_corrida_actual = [patrimonio_inicial] # Empezar con capital inicial
+            historial_resultados_corrida_actual = []  # Nuevo: Historial de 1 (ganó) o 0 (perdió)
 
             for tirada_num in range(self.cantidad_tiradas):
                 # Verificar si se puede seguir jugando (capital finito)
@@ -201,24 +205,43 @@ class Ruleta:
                 # Actualizar contexto de la estrategia antes de calcular la siguiente apuesta
                 self.jugador.actualizar_estrategia()
                 self.jugador.apuesta = self.jugador.estrategia.calcular_siguiente_apuesta(gano)
+                historial_resultados_corrida_actual.append(int(gano))  # Guardar 1 si ganó, 0 si perdió
+
+
+
             
             # Asegurarse de que los historiales tengan la longitud correcta si la corrida terminó antes
             while len(historial_capital_corrida_actual) < self.cantidad_tiradas + 1:
                  historial_capital_corrida_actual.append(historial_capital_corrida_actual[-1])
             while len(historial_apuestas_corrida_actual) < self.cantidad_tiradas:
                  historial_apuestas_corrida_actual.append(0)
+            while len(historial_resultados_corrida_actual) < self.cantidad_tiradas:
+                historial_resultados_corrida_actual.append(0)
 
             self.historial_apuestas_corridas.append(historial_apuestas_corrida_actual)
             self.historial_capital_corridas.append(historial_capital_corrida_actual)
+            self.historial_resultados_corridas.append(historial_resultados_corrida_actual)
+
             print(f"Corrida {i} terminada. Patrimonio final: {self.jugador.patrimonio_actual}")
 
+
+### Ejecución
+
+# PARAMETROS
 cantidad_tiradas = 100
 cantidad_corridas = 2
 eleccion = 6
 tipo_estrategia = "Fibonacci"
-tipo_capital = "infinito"
+tipo_capital = "i"
 apuesta = 10
 capital_inicial = 1_000
+
+cantidad_tiradas = int(sys.argv[2]) # -c cantidad_tiradas
+cantidad_corridas = int(sys.argv[4]) # -n cantidad_corridas
+eleccion = sys.argv[6] # -e numero_elegido
+tipo_estrategia = sys.argv[8] # -s estrategia
+tipo_capital = sys.argv[10] # -a tipo_capital
+
 jugador = Jugador(eleccion, capital_inicial, tipo_estrategia, tipo_capital, apuesta)
 ruleta = Ruleta(jugador, cantidad_tiradas, cantidad_corridas)
 ruleta.empezar_juego()
@@ -277,3 +300,27 @@ else:
     print("No hay historial de capital para graficar.")
 
 
+# --- Código para Graficar la Frecuencia Relativa de Aciertos por Número de Tiradas ---
+
+print(ruleta.historial_resultados_corridas)
+if ruleta.historial_resultados_corridas:
+    # Seleccionamos una corrida para graficar (por ejemplo la primera)
+    corrida_a_graficar = 0
+    if corrida_a_graficar < len(ruleta.historial_resultados_corridas):
+        resultados = ruleta.historial_resultados_corridas[corrida_a_graficar]  # Lista de resultados (0 o 1)
+
+        tiradas_eje_x = np.arange(1, len(resultados) + 1)
+        frecuencia_relativa = np.cumsum(resultados) / tiradas_eje_x
+
+        plt.figure(figsize=(10, 6))
+        plt.bar(tiradas_eje_x, frecuencia_relativa, color='red', edgecolor='blue', width=0.8)
+        plt.xlabel('n (número de tiradas)')
+        plt.ylabel('fr (frecuencia relativa)')
+        plt.title(f'frsa (Frecuencia Relativa de Aciertos según n)\nCorrida {corrida_a_graficar + 1} - Estrategia: {tipo_estrategia.capitalize()}')
+        plt.grid(True, linestyle='--', alpha=0.5)
+        plt.tight_layout()
+        plt.show()
+    else:
+        print(f"No se puede graficar la corrida {corrida_a_graficar + 1} porque solo se ejecutaron {len(ruleta.historial_resultados_corridas)} corridas.")
+else:
+    print("No hay historial de resultados para graficar.")
