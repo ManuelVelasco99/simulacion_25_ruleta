@@ -3,6 +3,7 @@ import sys
 import matplotlib.pyplot as plt # Importar matplotlib
 import numpy as np # Importar numpy
 
+
 class ContextoEstrategia:
     def __init__(self, patrimonio_actual, apuesta, tipo_capital):
         self.patrimonio_actual = patrimonio_actual
@@ -118,8 +119,8 @@ class Ruleta:
         self.cantidad_tiradas = cantidad_tiradas
         self.cantidad_corridas = cantidad_corridas
         self.generador_numeros = random.Random()
-        self.historial_capital_corridas = [] # Nuevo: para guardar historial de capital
-        self.historial_apuestas_corridas = [] # Nuevo: para guardar historial de apuestas
+        self.historial_capital_corridas = []
+        self.historial_apuestas_corridas = []
         self.historial_resultados_corridas = []  # Nuevo: para guardar si ganó o perdió cada tirada
         self.valores_por_eleccion = {
             "rojo": [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36],
@@ -219,15 +220,55 @@ class Ruleta:
 
             print(f"Corrida {i} terminada. Patrimonio final: {self.jugador.patrimonio_actual}")
 
+def graficar_histograma(resultados):
+    tiradas_eje_x = np.arange(1, len(resultados) + 1)
+    frecuencia_relativa = np.cumsum(resultados) / tiradas_eje_x
+    plt.figure(figsize=(10, 6))
+    plt.bar(tiradas_eje_x, frecuencia_relativa, color='red', edgecolor='blue', width=0.8)
+    plt.xlabel('n (número de tiradas)')
+    plt.ylabel('fr (frecuencia relativa)')
+    plt.title(f'frsa (Frecuencia Relativa de Aciertos según n)\nCorrida- Estrategia: {tipo_estrategia.capitalize()}')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.show()
 
+
+def graficar_evolucion_capital(esResultadoPromedio):
+    plt.figure(figsize=(12, 7)) # Crear una nueva figura para el capital
+
+    tiradas_eje_x = np.arange(ruleta.cantidad_tiradas + 1) # Eje X de 0 a cantidad_tiradas
+
+    # Graficar línea de capital inicial como referencia
+    capital_inicial_linea = np.full_like(tiradas_eje_x, fill_value=capital_inicial, dtype=float)
+    plt.plot(tiradas_eje_x, capital_inicial_linea, color='blue', linestyle='--', linewidth=1.5, label='Capital Inicial')
+
+    if(esResultadoPromedio):
+        # Calcular el promedio de capital a lo largo de las corridas
+        promedio_capital = np.mean(ruleta.historial_capital_corridas, axis=0)
+        plt.plot(tiradas_eje_x, promedio_capital, marker='', linestyle='-', linewidth=2, color='orange', label='Promedio Capital')
+        plt.title(f'Evolución del Capital promedio de las corridas - Estrategia: {tipo_estrategia.capitalize()}')
+    else:
+        # Graficar la evolución del capital para cada corrida
+        for i, capital_historial in enumerate(ruleta.historial_capital_corridas):
+            # Asegurarse que el historial tenga la longitud correcta para graficar
+            if len(capital_historial) == len(tiradas_eje_x):
+                plt.plot(tiradas_eje_x, capital_historial, marker='', linestyle='-', linewidth=1, alpha=0.8, label=f'Corrida {i+1}')
+            else:
+                print(f"Advertencia: La corrida {i+1} tiene una longitud de historial de capital inesperada ({len(capital_historial)}) y no se graficará.")
+
+            plt.title(f'Evolución del Capital por Corrida ({ruleta.cantidad_corridas} Corridas - Estrategia: {tipo_estrategia.capitalize()})')
+
+    plt.xlabel('Número de Tirada (n)')
+    plt.ylabel('Capital (cc)')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    # Mostrar leyenda solo si hay pocas corridas para no saturar
+    if ruleta.cantidad_corridas <= 5:
+        plt.legend()
+    plt.tight_layout()
+    plt.show()
 ### Ejecución
 
 # PARAMETROS
-cantidad_tiradas = 100
-cantidad_corridas = 2
-eleccion = 6
-tipo_estrategia = "Fibonacci"
-tipo_capital = "i"
 apuesta = 10
 capital_inicial = 1_000
 
@@ -241,93 +282,7 @@ jugador = Jugador(eleccion, capital_inicial, tipo_estrategia, tipo_capital, apue
 ruleta = Ruleta(jugador, cantidad_tiradas, cantidad_corridas)
 ruleta.empezar_juego()
 
-# --- Código para Graficar la Evolución de la Apuesta (Propuesta 3) ---
 
-# Verificar si hay historial para graficar
-if ruleta.historial_apuestas_corridas:
-    plt.figure(figsize=(12, 7)) # Crear una nueva figura para las apuestas
-
-    # Graficar la evolución de la apuesta para cada corrida
-    for i, apuestas_historial in enumerate(ruleta.historial_apuestas_corridas):
-        tiradas_eje_x = np.arange(1, len(apuestas_historial) + 1)
-        # Asegurarse que el historial tenga la longitud correcta para graficar
-        if len(apuestas_historial) == ruleta.cantidad_tiradas:
-             plt.plot(tiradas_eje_x, apuestas_historial, marker='', linestyle='-', linewidth=1, alpha=0.8, label=f'Corrida {i+1}')
-        else:
-             # Si la corrida terminó antes, ajustar el eje x
-             tiradas_eje_x_corto = np.arange(1, len(apuestas_historial) + 1)
-             plt.plot(tiradas_eje_x_corto, apuestas_historial, marker='', linestyle='-', linewidth=1, alpha=0.8, label=f'Corrida {i+1} (terminó antes)')
-             print(f"Advertencia: La corrida {i+1} tiene una longitud de historial de apuestas ({len(apuestas_historial)}) menor a la cantidad de tiradas ({ruleta.cantidad_tiradas}).")
-
-
-    plt.xlabel('Número de Tirada (n)')
-    plt.ylabel('Monto de la Apuesta')
-    plt.title(f'Evolución del Monto de la Apuesta por Corrida ({ruleta.cantidad_corridas} Corridas - Estrategia: {tipo_estrategia.capitalize()})')
-    plt.grid(True, linestyle='--', alpha=0.6)
-    # Mostrar leyenda solo si hay pocas corridas para no saturar
-    if ruleta.cantidad_corridas <= 10:
-        plt.legend()
-    plt.tight_layout()
-    plt.show()
-else:
-    print("No hay historial de apuestas para graficar.")
-
-# --- Código para Graficar la Evolución del Capital por Corrida ---
-if ruleta.historial_capital_corridas:
-    plt.figure(figsize=(12, 7)) # Crear una nueva figura para el capital
-
-    tiradas_eje_x = np.arange(ruleta.cantidad_tiradas + 1) # Eje X de 0 a cantidad_tiradas
-
-    # Graficar línea de capital inicial como referencia
-    capital_inicial_linea = np.full_like(tiradas_eje_x, fill_value=capital_inicial, dtype=float)
-    plt.plot(tiradas_eje_x, capital_inicial_linea, color='blue', linestyle='--', linewidth=1.5, label='Capital Inicial')
-
-    # Graficar la evolución del capital para cada corrida
-    for i, capital_historial in enumerate(ruleta.historial_capital_corridas):
-        # Asegurarse que el historial tenga la longitud correcta para graficar
-        if len(capital_historial) == len(tiradas_eje_x):
-            plt.plot(tiradas_eje_x, capital_historial, marker='', linestyle='-', linewidth=1, alpha=0.8, label=f'Corrida {i+1}')
-        else:
-             print(f"Advertencia: La corrida {i+1} tiene una longitud de historial de capital inesperada ({len(capital_historial)}) y no se graficará.")
-
-    plt.xlabel('Número de Tirada (n)')
-    plt.ylabel('Capital (cc)')
-    plt.title(f'Evolución del Capital por Corrida ({ruleta.cantidad_corridas} Corridas - Estrategia: {tipo_estrategia.capitalize()})')
-    plt.grid(True, linestyle='--', alpha=0.5)
-    # Mostrar leyenda solo si hay pocas corridas para no saturar
-    if ruleta.cantidad_corridas <= 10:
-        plt.legend()
-    plt.tight_layout()
-    plt.show()
-else:
-    print("No hay historial de capital para graficar.")
-
-
-# --- Código para Graficar la Frecuencia Relativa de Aciertos por Número de Tiradas ---
-
-if ruleta.historial_resultados_corridas:
-    plt.figure(figsize=(12, 7))  # Crear nueva figura
-
-    ancho_barra = 0.8 / ruleta.cantidad_corridas  # Ajustar ancho para no superponer barras
-
-    for i, resultados in enumerate(ruleta.historial_resultados_corridas):
-        tiradas_eje_x = np.arange(1, len(resultados) + 1)
-        frecuencia_relativa = np.cumsum(resultados) / tiradas_eje_x
-
-        # Desplazar cada conjunto de barras para que no se superpongan
-        desplazamiento = (i - ruleta.cantidad_corridas / 2) * ancho_barra
-        plt.bar(tiradas_eje_x + desplazamiento, frecuencia_relativa, 
-                width=ancho_barra, alpha=0.4, label=f'Corrida {i+1}', edgecolor='black')
-
-    plt.xlabel('Número de Tiradas (n)')
-    plt.ylabel('Frecuencia Relativa de Aciertos (fr)')
-    plt.title(f'Evolución de la Frecuencia Relativa de Aciertos ({ruleta.cantidad_corridas} Corridas - Estrategia: {tipo_estrategia.capitalize()})')
-    plt.grid(True, linestyle='--', alpha=0.5)
-
-    if ruleta.cantidad_corridas <= 10:
-        plt.legend()
-
-    plt.tight_layout()
-    plt.show()
-else:
-    print("No hay historial de resultados para graficar.")
+graficar_evolucion_capital(False) # Graficar la evolución del capital por corrida
+graficar_evolucion_capital(True) # Graficar el promedio de capital por corrida
+graficar_histograma(ruleta.historial_resultados_corridas[0]) # Graficar el histograma de resultados
