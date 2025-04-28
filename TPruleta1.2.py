@@ -221,10 +221,27 @@ class Ruleta:
             print(f"Corrida {i} terminada. Patrimonio final: {self.jugador.patrimonio_actual}")
 
 def graficar_histograma(resultados):
-    tiradas_eje_x = np.arange(1, len(resultados) + 1)
-    frecuencia_relativa = np.cumsum(resultados) / tiradas_eje_x
+    promedio_general_corridas = []
+    for i, corrida in enumerate(resultados):
+        tiradas_eje_x = np.arange(1, len(corrida) + 1)
+        frecuencia_relativa = np.cumsum(corrida) / tiradas_eje_x
+        promedio_general_corridas.append(frecuencia_relativa)
+
+    promedio_general_corridas_nuevo = np.mean(promedio_general_corridas, axis=0) # Promedio de todas las corridas
     plt.figure(figsize=(10, 6))
-    plt.bar(tiradas_eje_x, frecuencia_relativa, color='red', edgecolor='blue', width=0.8)
+    plt.bar(tiradas_eje_x, promedio_general_corridas_nuevo, color='red', edgecolor='red', width=0.8)
+    plt.xlabel('n (número de tiradas)')
+    plt.ylabel('fr (frecuencia relativa)')
+    plt.title(f'frsa (Frecuencia Relativa de Aciertos según n)\nCorrida- Estrategia: {tipo_estrategia.capitalize()}')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.show()
+
+    primera_corrida = resultados[0]
+    tiradas_eje_x = np.arange(1, len(primera_corrida) + 1)
+    frecuencia_relativa = np.cumsum(primera_corrida) / tiradas_eje_x
+    plt.figure(figsize=(10, 6))
+    plt.bar(tiradas_eje_x, frecuencia_relativa, color='red', edgecolor='red', width=0.8)
     plt.xlabel('n (número de tiradas)')
     plt.ylabel('fr (frecuencia relativa)')
     plt.title(f'frsa (Frecuencia Relativa de Aciertos según n)\nCorrida- Estrategia: {tipo_estrategia.capitalize()}')
@@ -234,9 +251,9 @@ def graficar_histograma(resultados):
 
 
 def graficar_evolucion_capital(esResultadoPromedio):
-    plt.figure(figsize=(12, 7)) # Crear una nueva figura para el capital
+    plt.figure(figsize=(12, 7))
 
-    tiradas_eje_x = np.arange(ruleta.cantidad_tiradas + 1) # Eje X de 0 a cantidad_tiradas
+    tiradas_eje_x = np.arange(ruleta.cantidad_tiradas + 1)
 
     # Graficar línea de capital inicial como referencia
     capital_inicial_linea = np.full_like(tiradas_eje_x, fill_value=capital_inicial, dtype=float)
@@ -266,6 +283,7 @@ def graficar_evolucion_capital(esResultadoPromedio):
         plt.legend()
     plt.tight_layout()
     plt.show()
+
 ### Ejecución
 
 # PARAMETROS
@@ -285,4 +303,4 @@ ruleta.empezar_juego()
 
 graficar_evolucion_capital(False) # Graficar la evolución del capital por corrida
 graficar_evolucion_capital(True) # Graficar el promedio de capital por corrida
-graficar_histograma(ruleta.historial_resultados_corridas[0]) # Graficar el histograma de resultados
+graficar_histograma(ruleta.historial_resultados_corridas) # Graficar el histograma de resultados
