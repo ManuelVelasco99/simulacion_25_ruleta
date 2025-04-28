@@ -188,9 +188,15 @@ class Ruleta:
                 # Verificar si se puede seguir jugando (capital finito)
                 if not self.puede_seguir_jugando():
                     # Si no puede seguir, rellenar el resto de tiradas con el capital actual (0 o lo que quede)
-                    capital_final_corrida = self.jugador.patrimonio_actual
-                    historial_apuestas_corrida_actual.extend([0] * (self.cantidad_tiradas - tirada_num))
-                    historial_capital_corrida_actual.extend([capital_final_corrida] * (self.cantidad_tiradas - tirada_num))
+                    capital_final_corrida = self.jugador.patrimonio_actual # Capital before this impossible tirada
+                    num_tiradas_restantes = self.cantidad_tiradas - tirada_num
+                    # Pad bets with 0 for remaining tiradas
+                    historial_apuestas_corrida_actual.extend([0] * num_tiradas_restantes)
+                    # Pad capital history with the final capital value for the remaining tiradas
+                    historial_capital_corrida_actual.extend([capital_final_corrida] * num_tiradas_restantes)
+                    # Pad results history with 0 (loss/no play) for remaining tiradas
+                    historial_resultados_corrida_actual.extend([0] * num_tiradas_restantes)
+                    print(f"  Corrida {i} detenida en tirada {tirada_num} por falta de capital o apuesta imposible.")
                     break # Salir del bucle de tiradas para esta corrida
 
                 apuesta_esta_tirada = self.jugador.apuesta
@@ -287,7 +293,7 @@ def graficar_evolucion_capital(esResultadoPromedio):
 ### Ejecución
 
 # PARAMETROS
-apuesta = 10
+apuesta = 250
 capital_inicial = 1_000
 
 cantidad_tiradas = int(sys.argv[2]) # -c cantidad_tiradas
