@@ -100,13 +100,13 @@ class Jugador:
 
     def determinar_estrategia(self):
         contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital)
-        if self.tipo_estrategia.lower() == "martingala":
+        if self.tipo_estrategia.lower() == "m":
             return MartingalaEstrategia(contexto)
-        elif self.tipo_estrategia.lower() == "fibonacci":
+        elif self.tipo_estrategia.lower() == "f":
             return FibonacciEstrategia(contexto)
-        elif self.tipo_estrategia.lower() == "dalamber":
+        elif self.tipo_estrategia.lower() == "d":
             return DalamberEstrategia(contexto)
-        elif self.tipo_estrategia.lower() == "paroli":
+        elif self.tipo_estrategia.lower() == "p":
             return ParoliEstrategia(contexto)
         return MartingalaEstrategia(contexto)
 
@@ -301,6 +301,57 @@ cantidad_corridas = int(sys.argv[4]) # -n cantidad_corridas
 eleccion = sys.argv[6] # -e numero_elegido
 tipo_estrategia = sys.argv[8] # -s estrategia
 tipo_capital = sys.argv[10] # -a tipo_capital
+
+if cantidad_tiradas < 1:
+    print("El número de tiradas debe ser mayor a 0.")
+    sys.exit(1)
+
+if cantidad_corridas < 1:
+    print("El número de corridas debe ser mayor a 0.")
+    sys.exit(1)
+
+valid_string_choices = ["rojo", "negro", "impar", "par", "menor", "mayor", "doc1", "doc2", "doc3", "col1", "col2", "col3"]
+is_valid_choice = False
+try:
+    # Intentar convertir a entero
+    choice_int = int(eleccion)
+    if 0 <= choice_int <= 36:
+        eleccion = choice_int # Guardar como entero si es válido
+    else:
+        print(f"Error: La elección numérica '{eleccion}' debe estar entre 0 y 36.")
+        sys.exit(1)
+except ValueError:
+    # Si no es entero, verificar si es una cadena válida
+    if eleccion.lower() in valid_string_choices:
+        eleccion = eleccion.lower() # Guardar en minúsculas
+    else:
+        print(f"Error: La elección '{eleccion}' no es válida. Opciones: 0-36 o {', '.join(valid_string_choices)}.")
+        sys.exit(1)
+
+valid_strategies = ["m", "f", "d", "p"]
+if tipo_estrategia.lower() not in valid_strategies:
+    print(f"Error: Estrategia '{tipo_estrategia}' no válida. Opciones: {', '.join(valid_strategies)}.")
+    sys.exit(1)
+tipo_estrategia = tipo_estrategia.lower()
+
+# Validar tipo_capital
+valid_capital_types = ["f", "i"]
+if tipo_capital.lower() not in valid_capital_types:
+    print(f"Error: Tipo de capital '{tipo_capital}' no válido. Opciones: 'f' (finito) o 'i' (infinito).")
+    sys.exit(1)
+tipo_capital = tipo_capital.lower()
+
+if apuesta <= 0:
+    print("Error: La apuesta inicial debe ser mayor a 0.")
+    sys.exit(1)
+
+# Validar capital inicial (si es finito)
+if tipo_capital == 'f' and capital_inicial <= 0:
+    print("Error: El capital inicial debe ser mayor a 0 para capital finito.")
+    sys.exit(1)
+if tipo_capital == 'f' and apuesta > capital_inicial:
+    print("Error: La apuesta inicial no puede ser mayor que el capital inicial para capital finito.")
+    sys.exit(1)
 
 jugador = Jugador(eleccion, capital_inicial, tipo_estrategia, tipo_capital, apuesta)
 ruleta = Ruleta(jugador, cantidad_tiradas, cantidad_corridas)
