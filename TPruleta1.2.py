@@ -250,7 +250,7 @@ def graficar_histograma(resultados):
     plt.bar(tiradas_eje_x, frecuencia_relativa, color='red', edgecolor='red', width=0.8)
     plt.xlabel('n (número de tiradas)')
     plt.ylabel('fr (frecuencia relativa)')
-    plt.title(f'frsa (Frecuencia Relativa de Aciertos según n)\nCorrida- Estrategia: {tipo_estrategia.capitalize()}')
+    plt.title(f'frsa (Frecuencia Relativa de Aciertos según el promedio de las corridas n)\nCorrida- Estrategia: {tipo_estrategia.capitalize()}')
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
