@@ -5,10 +5,11 @@ import numpy as np # Importar numpy
 
 
 class ContextoEstrategia:
-    def __init__(self, patrimonio_actual, apuesta, tipo_capital):
+    def __init__(self, patrimonio_actual, apuesta, tipo_capital, tres_victorias_seguidas):
         self.patrimonio_actual = patrimonio_actual
         self.apuesta = apuesta
         self.tipo_capital = tipo_capital
+        self.tres_victorias_seguidas = tres_victorias_seguidas
 
 class Estrategia:
     def __init__(self, contexto):
@@ -39,7 +40,7 @@ class ParoliEstrategia(Estrategia):
         self.apuesta_actual = contexto.apuesta
 
     def calcular_siguiente_apuesta(self, gano):
-        if gano:
+        if gano and not self.contexto.tres_victorias_seguidas:
             self.apuesta_actual *= 2
         else:
             self.apuesta_actual = apuesta
@@ -97,9 +98,8 @@ class Jugador:
         self.tipo_capital = tipo_capital
         self.apuesta = apuesta
         self.estrategia = self.determinar_estrategia()
-
     def determinar_estrategia(self):
-        contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital)
+        contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital, False)
         if self.tipo_estrategia.lower() == "m":
             return MartingalaEstrategia(contexto)
         elif self.tipo_estrategia.lower() == "f":
@@ -110,8 +110,8 @@ class Jugador:
             return ParoliEstrategia(contexto)
         return MartingalaEstrategia(contexto)
 
-    def actualizar_estrategia(self):
-        self.estrategia.contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital)
+    def actualizar_estrategia(self, tres_victorias_seguidas):
+        self.estrategia.contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital, tres_victorias_seguidas)
 
 class Ruleta:
     def __init__(self, jugador, cantidad_tiradas, cantidad_corridas):
@@ -205,12 +205,13 @@ class Ruleta:
                 numero = self.girar_ruleta()
                 gano = self.atino_numero(numero)
                 self.actualizar_patrimonio(gano)
+                historial_resultados_corrida_actual.append(int(gano))  # Guardar 1 si ganó, 0 si perdió
                 historial_capital_corrida_actual.append(self.jugador.patrimonio_actual) # Guardar capital *después* de actualizar
 
                 # Actualizar contexto de la estrategia antes de calcular la siguiente apuesta
-                self.jugador.actualizar_estrategia()
+                tres_victorias_seguidas = tirada_num > 3 and all(bool(historial_resultados_corrida_actual[tirada_num - i]) for i in range(1, 4))
+                self.jugador.actualizar_estrategia(tres_victorias_seguidas)
                 self.jugador.apuesta = self.jugador.estrategia.calcular_siguiente_apuesta(gano)
-                historial_resultados_corrida_actual.append(int(gano))  # Guardar 1 si ganó, 0 si perdió
 
             # Asegurarse de que los historiales tengan la longitud correcta si la corrida terminó antes
             while len(historial_capital_corrida_actual) < self.cantidad_tiradas + 1:
