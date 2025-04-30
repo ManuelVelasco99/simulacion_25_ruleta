@@ -1,78 +1,74 @@
 import random
 import sys
-import matplotlib.pyplot as plt # Importar matplotlib
-import numpy as np # Importar numpy
+import matplotlib.pyplot as plt  # Importar matplotlib
+import pandas as pd
+import numpy as np  # Importar numpy
 
+estrategias_apuesta = {
+    'm': 'Martingala',
+    'f': 'Fibonacci',
+    'd': "D'Alembert",
+    'p': 'Paroli'
+}
 
-class ContextoEstrategia:
-    def __init__(self, patrimonio_actual, apuesta, tipo_capital, tres_victorias_seguidas):
-        self.patrimonio_actual = patrimonio_actual
-        self.apuesta = apuesta
-        self.tipo_capital = tipo_capital
-        self.tres_victorias_seguidas = tres_victorias_seguidas
+capital = {
+    'i': 'infinito',
+    'f': 'finito',
+}
 
 class Estrategia:
-    def __init__(self, contexto):
-        self.contexto = contexto
-
-    def calcular_siguiente_apuesta(self, gano):
+    def calcular_siguiente_apuesta(self, capital, apuesta_anterior, gano, cantidad_victorias_seguidas):
         raise NotImplementedError()
 
+
 class MartingalaEstrategia(Estrategia):
-    def __init__(self, contexto):
-        super().__init__(contexto)
-        self.apuesta_actual = contexto.apuesta
-
-    def calcular_siguiente_apuesta(self, gano):
+    def calcular_siguiente_apuesta(self, capital, apuesta_anterior, gano, cantidad_victorias_seguidas):
+        apuesta = apuesta_anterior
         if not gano:
-            self.apuesta_actual *= 2
+            apuesta = apuesta * 2
         else:
-            self.apuesta_actual = apuesta
+            apuesta = apuesta_inicial
 
-        if self.contexto.tipo_capital == "f" and self.apuesta_actual > self.contexto.patrimonio_actual:
-            self.apuesta_actual = self.contexto.patrimonio_actual
+        if tipo_capital == "f" and apuesta > capital:
+            apuesta = capital
 
-        return self.apuesta_actual
+        return apuesta
+
 
 class ParoliEstrategia(Estrategia):
-    def __init__(self, contexto):
-        super().__init__(contexto)
-        self.apuesta_actual = contexto.apuesta
-
-    def calcular_siguiente_apuesta(self, gano):
-        if gano and not self.contexto.tres_victorias_seguidas:
-            self.apuesta_actual *= 2
+    def calcular_siguiente_apuesta(self, capital, apuesta_anterior, gano, cantidad_victorias_seguidas):
+        apuesta = apuesta_anterior
+        if gano and cantidad_victorias_seguidas < 3:
+            apuesta = apuesta * 2
         else:
-            self.apuesta_actual = apuesta
+            apuesta = apuesta_inicial
 
-        if self.contexto.tipo_capital == "f" and self.apuesta_actual > self.contexto.patrimonio_actual:
-            self.apuesta_actual = self.contexto.patrimonio_actual
+        if tipo_capital == "f" and apuesta > capital:
+            apuesta = capital
 
-        return self.apuesta_actual
+        return apuesta
 
-class DalamberEstrategia(Estrategia):
-    def __init__(self, contexto):
-        super().__init__(contexto)
-        self.apuesta_actual = contexto.apuesta
 
-    def calcular_siguiente_apuesta(self, gano):
-        if not gano:
-            self.apuesta_actual += apuesta
-        elif self.apuesta_actual > apuesta:
-            self.apuesta_actual -= apuesta
+class DalembertEstrategia(Estrategia):
+    def calcular_siguiente_apuesta(self, capital, apuesta_anterior, gano, cantidad_victorias_seguidas):
+        apuesta = apuesta_anterior
+        if gano:
+            apuesta = max(apuesta - apuesta_inicial, apuesta_inicial)
+        else:
+            apuesta += apuesta_inicial
 
-        if self.contexto.tipo_capital == "f" and self.apuesta_actual > self.contexto.patrimonio_actual:
-            self.apuesta_actual = self.contexto.patrimonio_actual
+        if tipo_capital == "f" and apuesta > capital:
+            apuesta = capital
 
-        return self.apuesta_actual
+        return apuesta
+
 
 class FibonacciEstrategia(Estrategia):
-    def __init__(self, contexto):
-        super().__init__(contexto)
+    def __init__(self):
         self.indice_fibonacci = 0
         self.secuencia_fibonacci = [1, 1]
 
-    def calcular_siguiente_apuesta(self, gano):
+    def calcular_siguiente_apuesta(self, capital, apuesta_anterior, gano, cantidad_victorias_seguidas):
         if not gano:
             self.indice_fibonacci += 1
             if self.indice_fibonacci >= len(self.secuencia_fibonacci):
@@ -84,44 +80,28 @@ class FibonacciEstrategia(Estrategia):
         else:
             self.indice_fibonacci = 0
 
-        apuesta_actual = self.secuencia_fibonacci[self.indice_fibonacci] * apuesta
-        if self.contexto.tipo_capital == "f" and apuesta_actual > self.contexto.patrimonio_actual:
-            apuesta_actual = self.contexto.patrimonio_actual
+        apuesta = self.secuencia_fibonacci[self.indice_fibonacci] * apuesta_inicial
 
-        return apuesta_actual
+        if tipo_capital == "f" and apuesta > capital:
+            apuesta = capital
+
+        return apuesta
+
 
 class Jugador:
-    def __init__(self, eleccion, patrimonio_actual, tipo_estrategia, tipo_capital, apuesta):
-        self.eleccion = eleccion
-        self.patrimonio_actual = patrimonio_actual
-        self.tipo_estrategia = tipo_estrategia
-        self.tipo_capital = tipo_capital
-        self.apuesta = apuesta
-        self.estrategia = self.determinar_estrategia()
-    def determinar_estrategia(self):
-        contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital, False)
-        if self.tipo_estrategia.lower() == "m":
-            return MartingalaEstrategia(contexto)
-        elif self.tipo_estrategia.lower() == "f":
-            return FibonacciEstrategia(contexto)
-        elif self.tipo_estrategia.lower() == "d":
-            return DalamberEstrategia(contexto)
-        elif self.tipo_estrategia.lower() == "p":
-            return ParoliEstrategia(contexto)
-        return MartingalaEstrategia(contexto)
+    def __init__(self):
+        self.apuesta = apuesta_inicial
+        self.capital = capital_inicial
 
-    def actualizar_estrategia(self, tres_victorias_seguidas):
-        self.estrategia.contexto = ContextoEstrategia(self.patrimonio_actual, self.apuesta, tipo_capital, tres_victorias_seguidas)
 
 class Ruleta:
-    def __init__(self, jugador, cantidad_tiradas, cantidad_corridas):
+    def __init__(self, jugador):
         self.jugador = jugador
-        self.cantidad_tiradas = cantidad_tiradas
-        self.cantidad_corridas = cantidad_corridas
-        self.generador_numeros = random.Random()
         self.historial_capital_corridas = []
         self.historial_apuestas_corridas = []
         self.historial_resultados_corridas = []  # Nuevo: para guardar si ganó o perdió cada tirada
+        self.historial_frecuencia_relativa = []
+        self.historial_dfs = []
         self.valores_por_eleccion = {
             "rojo": [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36],
             "negro": [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35],
@@ -137,171 +117,233 @@ class Ruleta:
             "col3": [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],
         }
 
-    def girar_ruleta(self):
-        return self.generador_numeros.randint(0, 36)
-
-    def puede_seguir_jugando(self):
-        if self.jugador.tipo_capital == "i":
-            return True
-
-        return self.jugador.patrimonio_actual > 0 and self.jugador.apuesta <= self.jugador.patrimonio_actual
+    def determinar_estrategia(self):
+        if tipo_estrategia.lower() == "m":
+            return MartingalaEstrategia()
+        elif tipo_estrategia.lower() == "f":
+            return FibonacciEstrategia()
+        elif tipo_estrategia.lower() == "d":
+            return DalembertEstrategia()
+        elif tipo_estrategia.lower() == "p":
+            return ParoliEstrategia()
+        return MartingalaEstrategia()
 
     def atino_numero(self, numero):
-        if isinstance(self.jugador.eleccion, int):
-            return numero == self.jugador.eleccion
-        elif isinstance(self.jugador.eleccion, str):
-            return numero in self.valores_por_eleccion.get(self.jugador.eleccion, [])
+        if isinstance(eleccion, int):
+            return numero == eleccion
+        elif isinstance(eleccion, str):
+            return numero in self.valores_por_eleccion.get(eleccion, [])
         return False
 
     def actualizar_patrimonio(self, gano):
         if not gano:
             self.jugador.patrimonio_actual -= self.jugador.apuesta
         else:
-            if isinstance(self.jugador.eleccion, int):
+            if isinstance(eleccion, int):
                 pago = self.jugador.apuesta * 35
-            elif self.jugador.eleccion in ["rojo", "negro", "par", "impar", "mayor", "menor"]:
+            elif eleccion in ["rojo", "negro", "par", "impar", "mayor", "menor"]:
                 pago = self.jugador.apuesta
-            elif self.jugador.eleccion.startswith("doc") or self.jugador.eleccion.startswith("col"):
+            elif eleccion.startswith("doc") or eleccion.startswith("col"):
                 pago = self.jugador.apuesta * 2
             else:
                 raise ValueError("Tipo de elección no soportado")
-            self.jugador.patrimonio_actual += pago + self.jugador.apuesta
+            self.jugador.patrimonio_actual += pago
 
     def empezar_juego(self):
-        patrimonio_inicial = self.jugador.patrimonio_actual
-        apuesta_inicial = self.jugador.apuesta
-        self.historial_apuestas_corridas = [] # Limpiar historial al empezar
-        self.historial_capital_corridas = [] # Limpiar historial de capital al empezar
+        self.historial_apuestas_corridas = []  # Limpiar historial al empezar
+        self.historial_capital_corridas = []  # Limpiar historial de capital al finalizar
         self.historial_resultados_corridas = []
+        self.historial_frecuencia_relativa = []
+        self.historial_dfs = []
 
-        for i, corrida in enumerate(range(self.cantidad_corridas)):
-            self.jugador.patrimonio_actual = patrimonio_inicial
+        for i, corrida in enumerate(range(cantidad_corridas)):
+
+            tiradas = np.random.randint(0, 37, size=[cantidad_tiradas])
+            self.jugador.patrimonio_actual = capital_inicial
             self.jugador.apuesta = apuesta_inicial
-            # Reiniciar estrategia para cada corrida (importante para Fibonacci/Dalamber)
-            self.jugador.estrategia = self.jugador.determinar_estrategia()
 
-            historial_apuestas_corrida_actual = [] # Historial para esta corrida
-            historial_capital_corrida_actual = [patrimonio_inicial] # Empezar con capital inicial
+            estrategia = self.determinar_estrategia()
+
+            historial_apuestas_corrida_actual = []  # Historial para esta corrida
+            historial_capital_corrida_actual = []  # Empezar con capital inicial
             historial_resultados_corrida_actual = []  # Nuevo: Historial de 1 (ganó) o 0 (perdió)
+            historial_frecuencia_relativa_actual = []
 
-            for tirada_num in range(self.cantidad_tiradas):
-                # Verificar si se puede seguir jugando (capital finito)
-                if not self.puede_seguir_jugando():
-                    # Si no puede seguir, rellenar el resto de tiradas con el capital actual (0 o lo que quede)
-                    capital_final_corrida = self.jugador.patrimonio_actual # Capital before this impossible tirada
-                    num_tiradas_restantes = self.cantidad_tiradas - tirada_num
-                    # Pad bets with 0 for remaining tiradas
-                    historial_apuestas_corrida_actual.extend([0] * num_tiradas_restantes)
-                    # Pad capital history with the final capital value for the remaining tiradas
-                    historial_capital_corrida_actual.extend([capital_final_corrida] * num_tiradas_restantes)
-                    # Pad results history with 0 (loss/no play) for remaining tiradas
-                    historial_resultados_corrida_actual.extend([0] * num_tiradas_restantes)
-                    print(f"  Corrida {i} detenida en tirada {tirada_num} por falta de capital o apuesta imposible.")
-                    break # Salir del bucle de tiradas para esta corrida
+            historial_apuestas_corrida_actual.append(self.jugador.apuesta)
+            historial_capital_corrida_actual.append(self.jugador.patrimonio_actual)
 
-                apuesta_esta_tirada = self.jugador.apuesta
-                historial_apuestas_corrida_actual.append(apuesta_esta_tirada)
+            cantidad_victorias_seguidas = 0
 
-                numero = self.girar_ruleta()
-                gano = self.atino_numero(numero)
-                self.actualizar_patrimonio(gano)
-                historial_resultados_corrida_actual.append(int(gano))  # Guardar 1 si ganó, 0 si perdió
-                historial_capital_corrida_actual.append(self.jugador.patrimonio_actual) # Guardar capital *después* de actualizar
+            for index, tirada in enumerate(tiradas):
 
-                # Actualizar contexto de la estrategia antes de calcular la siguiente apuesta
-                tres_victorias_seguidas = tirada_num > 3 and all(bool(historial_resultados_corrida_actual[tirada_num - i]) for i in range(1, 4))
-                self.jugador.actualizar_estrategia(tres_victorias_seguidas)
-                self.jugador.apuesta = self.jugador.estrategia.calcular_siguiente_apuesta(gano)
+                is_win = self.atino_numero(tirada)
 
-            # Asegurarse de que los historiales tengan la longitud correcta si la corrida terminó antes
-            while len(historial_capital_corrida_actual) < self.cantidad_tiradas + 1:
-                 historial_capital_corrida_actual.append(historial_capital_corrida_actual[-1])
-            while len(historial_apuestas_corrida_actual) < self.cantidad_tiradas:
-                 historial_apuestas_corrida_actual.append(0)
-            while len(historial_resultados_corrida_actual) < self.cantidad_tiradas:
-                historial_resultados_corrida_actual.append(0)
+                if cantidad_victorias_seguidas == 3:
+                    cantidad_victorias_seguidas = 0
+
+                if is_win:
+                    cantidad_victorias_seguidas += 1
+                else:
+                    cantidad_victorias_seguidas = 0
+
+                historial_resultados_corrida_actual.append(is_win)
+
+                historial_frecuencia_relativa_actual.append(
+                    historial_resultados_corrida_actual.count(True) / (index + 1))
+
+                self.actualizar_patrimonio(is_win)
+
+                self.jugador.apuesta = estrategia.calcular_siguiente_apuesta(self.jugador.capital, self.jugador.apuesta,
+                                                                             is_win, cantidad_victorias_seguidas)
+
+                if self.jugador.apuesta > self.jugador.patrimonio_actual and tipo_capital == 'f':  # banca rota
+                    completar_array(historial_capital_corrida_actual,0,cantidad_tiradas)
+                    completar_array(historial_apuestas_corrida_actual,0,cantidad_tiradas)
+                    completar_array(historial_resultados_corrida_actual,False,cantidad_tiradas)
+                    completar_array(historial_frecuencia_relativa_actual,0,cantidad_tiradas)
+                    break
+
+                if len(historial_apuestas_corrida_actual) == cantidad_tiradas:
+                    break
+
+                historial_apuestas_corrida_actual.append(self.jugador.apuesta)
+                historial_capital_corrida_actual.append(self.jugador.patrimonio_actual)
 
             self.historial_apuestas_corridas.append(historial_apuestas_corrida_actual)
             self.historial_capital_corridas.append(historial_capital_corrida_actual)
             self.historial_resultados_corridas.append(historial_resultados_corrida_actual)
+            self.historial_frecuencia_relativa.append(historial_frecuencia_relativa_actual)
 
-            print(f"Corrida {i} terminada. Patrimonio final: {self.jugador.patrimonio_actual}")
+            dataframe = pd.DataFrame({
+                'capital': historial_capital_corrida_actual,
+                'apuesta': historial_apuestas_corrida_actual,
+                'victoria': historial_resultados_corrida_actual,
+                'fr': historial_frecuencia_relativa_actual
+            })
 
-def graficar_histograma(resultados):
-    promedio_general_corridas = []
-    for i, corrida in enumerate(resultados):
-        tiradas_eje_x = np.arange(1, len(corrida) + 1)
-        frecuencia_relativa = np.cumsum(corrida) / tiradas_eje_x
-        promedio_general_corridas.append(frecuencia_relativa)
+            self.historial_dfs.append(dataframe)
 
-    promedio_general_corridas_nuevo = np.mean(promedio_general_corridas, axis=0) # Promedio de todas las corridas
-    plt.figure(figsize=(10, 6))
-    plt.bar(tiradas_eje_x, promedio_general_corridas_nuevo, color='red', edgecolor='red', width=0.8)
-    plt.xlabel('n (número de tiradas)')
-    plt.ylabel('fr (frecuencia relativa)')
-    plt.title(f'frsa (Frecuencia Relativa de Aciertos según n)\nCorrida- Estrategia: {tipo_estrategia.capitalize()}')
-    plt.grid(True, linestyle='--', alpha=0.5)
-    plt.tight_layout()
-    plt.show()
+            print(f"Corrida {i+1} terminada. Patrimonio final: {self.jugador.patrimonio_actual}")
 
-    primera_corrida = resultados[0]
-    tiradas_eje_x = np.arange(1, len(primera_corrida) + 1)
-    frecuencia_relativa = np.cumsum(primera_corrida) / tiradas_eje_x
-    plt.figure(figsize=(10, 6))
-    plt.bar(tiradas_eje_x, frecuencia_relativa, color='red', edgecolor='red', width=0.8)
-    plt.xlabel('n (número de tiradas)')
-    plt.ylabel('fr (frecuencia relativa)')
-    plt.title(f'frsa (Frecuencia Relativa de Aciertos según el promedio de las corridas n)\nCorrida- Estrategia: {tipo_estrategia.capitalize()}')
-    plt.grid(True, linestyle='--', alpha=0.5)
-    plt.tight_layout()
-    plt.show()
+    def graficar(self):
+        # Mostrar gráfico
+        self.grafico_flujo_caja()
+        self.graficar_histograma()
 
+        listados_capital = [df['capital'] for df in self.historial_dfs]
+        listado_frecuencias_relativas = [df["fr"] for df in self.historial_dfs]
 
-def graficar_evolucion_capital(esResultadoPromedio):
-    plt.figure(figsize=(12, 7))
+        self.grafico_flujo_caja_promedio(listados_capital)
+        self.generar_histograma_promedio(listado_frecuencias_relativas)
 
-    tiradas_eje_x = np.arange(ruleta.cantidad_tiradas + 1)
+    def grafico_flujo_caja(self):
+        fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Graficar línea de capital inicial como referencia
-    capital_inicial_linea = np.full_like(tiradas_eje_x, fill_value=capital_inicial, dtype=float)
-    plt.plot(tiradas_eje_x, capital_inicial_linea, color='blue', linestyle='--', linewidth=1.5, label='Capital Inicial')
+        ax.set_title(f"Evolución del capital promedio de las tiradas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}")
+        ax.set_xlabel('n (número de tiradas)')
+        ax.set_ylabel('c (capital)')
 
-    if(esResultadoPromedio):
-        # Calcular el promedio de capital a lo largo de las corridas
-        promedio_capital = np.mean(ruleta.historial_capital_corridas, axis=0)
-        plt.plot(tiradas_eje_x, promedio_capital, marker='', linestyle='-', linewidth=2, color='orange', label='Promedio Capital')
-        plt.title(f'Evolución del Capital promedio de las corridas - Estrategia: {tipo_estrategia.capitalize()}')
-    else:
-        # Graficar la evolución del capital para cada corrida
-        for i, capital_historial in enumerate(ruleta.historial_capital_corridas):
-            # Asegurarse que el historial tenga la longitud correcta para graficar
-            if len(capital_historial) == len(tiradas_eje_x):
-                plt.plot(tiradas_eje_x, capital_historial, marker='', linestyle='-', linewidth=1, alpha=0.8, label=f'Corrida {i+1}')
-            else:
-                print(f"Advertencia: La corrida {i+1} tiene una longitud de historial de capital inesperada ({len(capital_historial)}) y no se graficará.")
+        print(self.historial_capital_corridas)
 
-            plt.title(f'Evolución del Capital por Corrida ({ruleta.cantidad_corridas} Corridas - Estrategia: {tipo_estrategia.capitalize()})')
+        for capital_tiradas in self.historial_capital_corridas:
+            ax.plot(capital_tiradas, linewidth=2.0, )
+            max_value = max(capital_tiradas)
+            ax.scatter([0], [max_value])
 
-    plt.xlabel('Número de Tirada (n)')
-    plt.ylabel('Capital (cc)')
-    plt.grid(True, linestyle='--', alpha=0.5)
-    # Mostrar leyenda solo si hay pocas corridas para no saturar
-    if ruleta.cantidad_corridas <= 5:
+        ax.axhline(capital_inicial, color='r', linestyle='--', label='fci (flujo de caja inicial)')
+
+        ax.ticklabel_format(axis='y', style='plain')
+
         plt.legend()
-    plt.tight_layout()
-    plt.show()
+        plt.show()
 
-### Ejecución
+    def graficar_histograma(self):
+        fig, ax = plt.subplots(figsize=(10, 6))
 
-# PARAMETROS
-apuesta = 250
-capital_inicial = 1_000
+        ax.set_title(f"Histograma para {cantidad_corridas} corridas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}")
+        ax.set_xlabel('n (número de tiradas)')
+        ax.set_ylabel('fr (frecuencia relativa)')
 
-cantidad_tiradas = int(sys.argv[2]) # -c cantidad_tiradas
-cantidad_corridas = int(sys.argv[4]) # -n cantidad_corridas
-eleccion = sys.argv[6] # -e numero_elegido
-tipo_estrategia = sys.argv[8] # -s estrategia
-tipo_capital = sys.argv[10] # -a tipo_capital
+        for df in self.historial_dfs:
+            ax.bar(df.index, df['fr'], alpha=0.5)
+
+        ax.axhline(self.obtener_valor_esperado_frecuancia_relativa(), color='r', linestyle='--', label='Valor esperado')
+        plt.legend()
+        plt.show()
+
+    def grafico_flujo_caja_promedio(self, listados_capital):
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        max_tiradas = max(len(listado) for listado in listados_capital)
+        promedio_capital = []
+        for j in range(0, max_tiradas):
+            sum_capital_en_tiradas_i = 0
+            for i in range(0, len(listados_capital)):
+                try:
+                    sum_capital_en_tiradas_i += listados_capital[i][j]
+                except:
+                    sum_capital_en_tiradas_i += 0
+            promedio_capital.append(sum_capital_en_tiradas_i / cantidad_corridas)
+
+        # Graficar el promedio del capital
+        ax.plot(promedio_capital, label='Promedio del Capital', color='blue')
+        ax.set_title(f'Flujo de caja promedio a lo largo de las tiradas para {cantidad_corridas} corridas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}')
+        ax.set_xlabel('Número de tiradas')
+        ax.set_ylabel('Capital Promedio')
+        ax.legend()
+        ax.grid(True)
+        plt.show()
+
+    def obtener_valor_esperado_frecuancia_relativa(self):
+        cantidad_numeros_ganadores = len(self.valores_por_eleccion[eleccion])
+        return cantidad_numeros_ganadores / 37
+
+    def generar_histograma_promedio(self, listado_frecuencia_relativa):
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        max_tiradas = max(len(listado) for listado in listado_frecuencia_relativa)
+        promedio_frecuencias = []
+
+        for j in range(max_tiradas):
+            sum_frecuencias_en_tirada_j = 0
+            for i in range(len(listado_frecuencia_relativa)):
+                try:
+                    sum_frecuencias_en_tirada_j += listado_frecuencia_relativa[i][j]
+                except:
+                    sum_frecuencias_en_tirada_j += 0
+            promedio_frecuencias.append(sum_frecuencias_en_tirada_j / cantidad_corridas)
+
+        x_values = range(len(promedio_frecuencias))
+
+        ax.set_title(f"Histograma promedio de {cantidad_corridas} corridas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}")
+        ax.set_xlabel('n (número de tiradas)')
+        ax.set_ylabel('fr (frecuencia relativa)')
+        ax.bar(x_values, promedio_frecuencias, alpha=0.5)
+        
+        ax.axhline(self.obtener_valor_esperado_frecuancia_relativa(), color='r', linestyle='--', label='Valor esperado')
+        plt.legend()
+        plt.show()
+
+
+def completar_array(array, valor, longitud_objetivo):
+    longitud_actual = len(array)
+    if longitud_actual >= longitud_objetivo:
+        return array[:longitud_objetivo]  # Recortar si excede
+    cantidad_a_agregar = longitud_objetivo - longitud_actual
+    array.extend([valor] * cantidad_a_agregar)
+    return array
+
+# Ejecución
+
+# Parámetros
+apuesta_inicial = 100
+capital_inicial = 10000
+
+cantidad_tiradas = int(sys.argv[2])  # -c cantidad_tiradas
+cantidad_corridas = int(sys.argv[4])  # -n cantidad_corridas
+eleccion = sys.argv[6]  # -e numero_elegido
+tipo_estrategia = sys.argv[8]  # -s estrategia
+tipo_capital = sys.argv[10]  # -a tipo_capital
 
 if cantidad_tiradas < 1:
     print("El número de tiradas debe ser mayor a 0.")
@@ -311,20 +353,21 @@ if cantidad_corridas < 1:
     print("El número de corridas debe ser mayor a 0.")
     sys.exit(1)
 
-valid_string_choices = ["rojo", "negro", "impar", "par", "menor", "mayor", "doc1", "doc2", "doc3", "col1", "col2", "col3"]
+valid_string_choices = ["rojo", "negro", "impar", "par", "menor", "mayor", "doc1", "doc2", "doc3", "col1", "col2",
+                        "col3"]
 is_valid_choice = False
 try:
     # Intentar convertir a entero
     choice_int = int(eleccion)
     if 0 <= choice_int <= 36:
-        eleccion = choice_int # Guardar como entero si es válido
+        eleccion = choice_int  # Guardar como entero si es válido
     else:
         print(f"Error: La elección numérica '{eleccion}' debe estar entre 0 y 36.")
         sys.exit(1)
 except ValueError:
     # Si no es entero, verificar si es una cadena válida
     if eleccion.lower() in valid_string_choices:
-        eleccion = eleccion.lower() # Guardar en minúsculas
+        eleccion = eleccion.lower()  # Guardar en minúsculas
     else:
         print(f"Error: La elección '{eleccion}' no es válida. Opciones: 0-36 o {', '.join(valid_string_choices)}.")
         sys.exit(1)
@@ -342,7 +385,7 @@ if tipo_capital.lower() not in valid_capital_types:
     sys.exit(1)
 tipo_capital = tipo_capital.lower()
 
-if apuesta <= 0:
+if apuesta_inicial <= 0:
     print("Error: La apuesta inicial debe ser mayor a 0.")
     sys.exit(1)
 
@@ -350,15 +393,11 @@ if apuesta <= 0:
 if tipo_capital == 'f' and capital_inicial <= 0:
     print("Error: El capital inicial debe ser mayor a 0 para capital finito.")
     sys.exit(1)
-if tipo_capital == 'f' and apuesta > capital_inicial:
+if tipo_capital == 'f' and apuesta_inicial > capital_inicial:
     print("Error: La apuesta inicial no puede ser mayor que el capital inicial para capital finito.")
     sys.exit(1)
 
-jugador = Jugador(eleccion, capital_inicial, tipo_estrategia, tipo_capital, apuesta)
-ruleta = Ruleta(jugador, cantidad_tiradas, cantidad_corridas)
+jugador = Jugador()
+ruleta = Ruleta(jugador)
 ruleta.empezar_juego()
-
-
-graficar_evolucion_capital(False) # Graficar la evolución del capital por corrida
-graficar_evolucion_capital(True) # Graficar el promedio de capital por corrida
-graficar_histograma(ruleta.historial_resultados_corridas) # Graficar el histograma de resultados
+ruleta.graficar()
