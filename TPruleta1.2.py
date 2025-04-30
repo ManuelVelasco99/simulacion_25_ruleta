@@ -287,7 +287,7 @@ class Ruleta:
 
         # Graficar el promedio del capital
         ax.plot(promedio_capital, label='Promedio del Capital', color='blue')
-        ax.set_title(f'Flujo de caja promedio de las {cantidad_corridas} corridas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}')
+        ax.set_title(f'Evolucion del cpaital promedio de las {cantidad_corridas} corridas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}')
         ax.set_xlabel('Número de tiradas')
         ax.set_ylabel('Capital Promedio')
         ax.legend()
