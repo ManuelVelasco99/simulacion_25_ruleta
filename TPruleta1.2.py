@@ -239,7 +239,7 @@ class Ruleta:
     def grafico_flujo_caja(self):
         fig, ax = plt.subplots(figsize=(10, 6))
 
-        ax.set_title(f"Evolución del capital promedio de las tiradas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}")
+        ax.set_title(f"Evolución del capital de cada corrida - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}")
         ax.set_xlabel('n (número de tiradas)')
         ax.set_ylabel('c (capital)')
 
@@ -250,7 +250,7 @@ class Ruleta:
             max_value = max(capital_tiradas)
             ax.scatter([0], [max_value])
 
-        ax.axhline(capital_inicial, color='r', linestyle='--', label='fci (flujo de caja inicial)')
+        ax.axhline(capital_inicial, color='r', linestyle='--', label='CI (Capital inicial)')
 
         ax.ticklabel_format(axis='y', style='plain')
 
@@ -287,7 +287,7 @@ class Ruleta:
 
         # Graficar el promedio del capital
         ax.plot(promedio_capital, label='Promedio del Capital', color='blue')
-        ax.set_title(f'Flujo de caja promedio a lo largo de las tiradas para {cantidad_corridas} corridas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}')
+        ax.set_title(f'Flujo de caja promedio de las {cantidad_corridas} corridas - Estrategia: {estrategias_apuesta[tipo_estrategia]} - Tipo de capital: {capital[tipo_capital]}')
         ax.set_xlabel('Número de tiradas')
         ax.set_ylabel('Capital Promedio')
         ax.legend()
