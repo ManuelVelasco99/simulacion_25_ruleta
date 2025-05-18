@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sns
 from scipy.stats import binom, expon,chisquare, gamma, hypergeom, norm, nbinom, poisson, randint
 
-def testChiCuadradoBinomial(muestras):
+def test_chi_cuadrado_binomial(muestras):
   # Calcular frecuencias observadas
   observed_freq = np.bincount(muestras, minlength=n+1)
 
@@ -45,7 +45,7 @@ def graficar_binomial(n, p, size):
     plt.ylabel("Densidad de ocurrencias")
     plt.show()
 
-    testChiCuadradoBinomial(samples)
+    test_chi_cuadrado_binomial(samples)
 
 def graficar_empirica_discreta(size):
     # Suponé que tenés esta muestra empírica de valores discretos:
@@ -72,9 +72,9 @@ def graficar_empirica_discreta(size):
     plt.tight_layout()
     plt.show()
 
-    testchi_cuadrado_empirica_discreta(size, samples)
+    test_chi_cuadrado_empirica_discreta(size, samples)
 
-def testchi_cuadrado_empirica_discreta(size, muestra):
+def test_chi_cuadrado_empirica_discreta(size, muestra):
     # Generar muestra empírica
     valores_posibles = [0, 1, 2, 3, 4, 5]
     probabilidades_teoricas = [0.1, 0.2, 0.3, 0.2, 0.1, 0.1]
@@ -127,9 +127,9 @@ def graficar_exponencial(n, lamda):
     plt.tight_layout()
     plt.show()
 
-    testchi_cuadrado_exponencial(n, lamda)
+    test_chi_cuadrado_exponencial(n, lamda)
 
-def testchi_cuadrado_exponencial(n, lamda, bins=10):
+def test_chi_cuadrado_exponencial(n, lamda, bins=10):
     scale = 1 / lamda
     muestras = np.random.exponential(scale=scale, size=n)
 
@@ -184,9 +184,9 @@ def graficar_gamma(n):
     plt.tight_layout()
     plt.show()
 
-    testchi_cuadrado_gamma(n, shape_k, scale_theta)
+    test_chi_cuadrado_gamma(n, shape_k, scale_theta)
 
-def testchi_cuadrado_gamma(n, k=2, theta=2, bins=10):
+def test_chi_cuadrado_gamma(n, k=2, theta=2, bins=10):
     muestras = np.random.gamma(shape=k, scale=theta, size=n)
 
     # Bordes de intervalos usando cuantiles teóricos
@@ -242,9 +242,9 @@ def graficar_hipergeometrica(n, size):
     plt.tight_layout()
     plt.show()
 
-    testchi_cuadrado_hipergeometrica(n, size, N, K)
+    test_chi_cuadrado_hipergeometrica(n, size, N, K)
 
-def testchi_cuadrado_hipergeometrica(n, size, N, K, samples):
+def test_chi_cuadrado_hipergeometrica(n, size, N, K, samples):
     valores_posibles = np.arange(max(0, n + K - N), min(K, n) + 1)
 
     observadas = np.array([np.sum(samples == k) for k in valores_posibles])
@@ -296,9 +296,9 @@ def graficar_normal(size):
     plt.tight_layout()
     plt.show()
 
-    testchi_cuadrado_normal(size, mu, sigma)
+    test_chi_cuadrado_normal(size, mu, sigma)
 
-def testchi_cuadrado_normal(n, mu=10, sigma=2, bins=10):
+def test_chi_cuadrado_normal(n, mu=10, sigma=2, bins=10):
     muestras = np.random.normal(loc=mu, scale=sigma, size=n)
 
     # Definir bordes por cuantiles teóricos
@@ -360,51 +360,69 @@ def graficar_pascal(size):
 
 def graficar_poisson(size):
     mu = 3
-
-    # Muestras
     samples = poisson.rvs(mu, size=size)
 
-    max_val = samples.max()
-    # Elegimos un rango razonable de valores
-    valores_posibles = np.arange(0, samples.max() + 1)
+    # Punto de corte para agrupar la cola
+    cutoff = max(10, samples.max())
+    valores_posibles = np.arange(0, cutoff)
 
-    # Frecuencias observadas
+    # Observadas
     observadas = np.array([np.sum(samples == k) for k in valores_posibles])
+    observadas = np.append(observadas, np.sum(samples >= cutoff))
 
-    # Frecuencias esperadas (PMF)
-    pmf = poisson.pmf(valores_posibles[:-1], mu)
-    ultima_prob = 1 - poisson.cdf(max_val - 2, mu)  # cola acumulada
+    # Esperadas
+    pmf = poisson.pmf(valores_posibles, mu)
+    ultima_prob = 1 - poisson.cdf(cutoff - 1, mu)
     pmf = np.append(pmf, ultima_prob)
     esperadas = pmf * size
 
-    # Ajustar esperadas para que sumen exactamente igual que observadas
-    esperadas *= (observadas.sum() / esperadas.sum())
+    # Crear máscara antes del ajuste
     mask = esperadas >= 5
+
+    # Ajustar esperadas solo para los valores enmascarados
+    obs_sum = observadas[mask].sum()
+    exp_sum = esperadas[mask].sum()
+
+    # Reescalar esperadas[mask] y sobreescribir en esperadas
+    escala = obs_sum / exp_sum
+    esperadas[mask] *= escala
+
+    # Corregir última celda enmascarada para forzar igualdad exacta
+    diferencia = observadas[mask].sum() - esperadas[mask].sum()
+    if abs(diferencia) > 1e-10:
+        idx_last = np.where(mask)[0][-1]
+        esperadas[idx_last] += diferencia
+
+    # Test chi-cuadrado
     chi2_stat, p_value = chisquare(f_obs=observadas[mask], f_exp=esperadas[mask])
 
     print("Chi² =", chi2_stat)
     print("p-value =", p_value)
     print("✅ H0 NO se rechaza" if p_value >= 0.05 else "❌ Se rechaza H0")
 
-    # Gráfico
+    # Gráficos
+    etiquetas = list(map(str, valores_posibles)) + [f"{cutoff}+"]
+    x = np.arange(len(etiquetas))
+
     plt.figure(figsize=(8, 6))
-    plt.bar(valores_posibles, observadas, color='skyblue')
+    plt.bar(x, observadas, color='skyblue')
+    plt.xticks(x, etiquetas, rotation=45)
     plt.title(f'Distribución de Poisson (μ = {mu})')
     plt.xlabel('Valor (última clase = resto)')
-    plt.ylabel('Frecuencia')
+    plt.ylabel('Frecuencia observada')
     plt.tight_layout()
     plt.show()
 
     plt.figure(figsize=(8, 6))
-    plt.plot(valores_posibles, pmf, 'r-', linewidth=2)
+    plt.plot(x, pmf, 'r-', linewidth=2)
+    plt.xticks(x, etiquetas, rotation=45)
     plt.title(f'Distribución de Poisson (μ = {mu})')
     plt.xlabel('Valor (última clase = resto)')
-    plt.ylabel('Frecuencia')
+    plt.ylabel('Probabilidad teórica')
     plt.tight_layout()
     plt.show()
 
-
-def testchi_cuadrado_poisson(n, mu):
+def test_chi_cuadrado_poisson(n, mu):
     muestras = poisson.rvs(mu, size=n)
 
     valores = np.arange(0, muestras.max() + 1)
@@ -453,10 +471,10 @@ def graficar_uniforme(size):
     plt.tight_layout()
     plt.show()
 
-    testchi_cuadrado_uniforme(size, a, b)
+    test_chi_cuadrado_uniforme(size, a, b)
 
 
-def testchi_cuadrado_uniforme(size, a=0, b=10):
+def test_chi_cuadrado_uniforme(size, a=0, b=10):
     muestras = randint.rvs(a, b, size=size)
 
     valores = np.arange(a, b)
@@ -495,4 +513,4 @@ lamba = 1
 # graficar_pascal(size)
 # size = 1000
 # graficar_poisson(size) # arreglar test chi cuadrado
-graficar_uniforme(size)
+graficar_poisson(size)
