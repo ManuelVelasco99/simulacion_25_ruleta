@@ -33,6 +33,7 @@ def graficar_binomial(n, p, size):
     plt.xlabel('Número de éxitos')
     plt.ylabel('Frecuencia')
     plt.tight_layout()
+    plt.savefig(f'./images/TP2.2/binomial histograma.png')
     plt.show()
 
     # Funcion de densidad
@@ -43,6 +44,7 @@ def graficar_binomial(n, p, size):
     plt.xlabel('Valor de la variable')
     plt.ylabel('Ocurrencias')
     plt.ylabel("Densidad de ocurrencias")
+    plt.savefig(f'./images/TP2.2/binomial densidad.png')
     plt.show()
 
     test_chi_cuadrado_binomial(samples)
@@ -57,6 +59,7 @@ def graficar_empirica_discreta(size):
     plt.title('Histograma de muestra empírica discreta')
     plt.xlabel('Valor')
     plt.ylabel('Frecuencia')
+    plt.savefig(f'./images/TP2.2/empirica discreta histograma.png')
     plt.tight_layout()
     plt.show()
 
@@ -68,7 +71,7 @@ def graficar_empirica_discreta(size):
     plt.title('Distribución de probabilidad empírica')
     plt.xlabel('Valor')
     plt.ylabel('Probabilidad estimada')
-
+    plt.savefig(f'./images/TP2.2/empirica discreta densidad.png')
     plt.tight_layout()
     plt.show()
 
@@ -113,8 +116,8 @@ def graficar_exponencial(n, lamda):
     plt.title('Histograma de muestra exponencial')
     plt.xlabel('Valor')
     plt.ylabel('Densidad')
-    plt.legend()
     plt.tight_layout()
+    plt.savefig(f'./images/TP2.2/exponencial histograma.png')
     plt.show()
 
     plt.figure(figsize=(8, 6))
@@ -123,8 +126,8 @@ def graficar_exponencial(n, lamda):
     plt.title('Funcion de densidad')
     plt.xlabel('Valor')
     plt.ylabel('Densidad')
-    plt.legend()
     plt.tight_layout()
+    plt.savefig(f'./images/TP2.2/exponencial densidad.png')
     plt.show()
 
     test_chi_cuadrado_exponencial(n, lamda)
@@ -173,6 +176,7 @@ def graficar_gamma(n):
     plt.title('Histograma de muestra gamma')
     plt.xlabel('Valor')
     plt.ylabel('Densidad')
+    plt.savefig(f'./images/TP2.2/gamma histograma.png')
     plt.tight_layout()
     plt.show()
 
@@ -181,6 +185,7 @@ def graficar_gamma(n):
     plt.title('Histograma de muestra gamma')
     plt.xlabel('Valor')
     plt.ylabel('Densidad')
+    plt.savefig(f'./images/TP2.2/gamma densidad.png')
     plt.tight_layout()
     plt.show()
 
@@ -230,6 +235,7 @@ def graficar_hipergeometrica(n, size):
     plt.xlabel('Número de éxitos en la muestra')
     plt.ylabel('Frecuencia absoluta')
     plt.xticks(valores_posibles)
+    plt.savefig(f'./images/TP2.2/hipergeometrica histograma.png')
     plt.tight_layout()
     plt.show()
 
@@ -238,6 +244,7 @@ def graficar_hipergeometrica(n, size):
     plt.title('Distribución hipergeométrica (proporciones)')
     plt.xlabel('Número de éxitos en la muestra')
     plt.ylabel('Frecuencia relativa')
+    plt.savefig(f'./images/TP2.2/hipergeometrica densidad.png')
     plt.xticks(valores_posibles)
     plt.tight_layout()
     plt.show()
@@ -285,6 +292,7 @@ def graficar_normal(size):
     plt.title('Distribución normal: histograma y densidad')
     plt.xlabel('Valor')
     plt.ylabel('Densidad')
+    plt.savefig(f'./images/TP2.2/normal histograma.png')
     plt.tight_layout()
     plt.show()
 
@@ -296,6 +304,7 @@ def graficar_normal(size):
     plt.title('Distribución normal: histograma y densidad')
     plt.xlabel('Valor')
     plt.ylabel('Densidad')
+    plt.savefig(f'./images/TP2.2/normal densidad.png')
     plt.tight_layout()
     plt.show()
 
@@ -351,6 +360,7 @@ def graficar_pascal(size):
     plt.xlabel('Cantidad de fracasos antes de lograr {} éxitos'.format(r))
     plt.ylabel('Frecuencia')
     plt.tight_layout()
+    plt.savefig(f'./images/TP2.2/pascal histograma.png')
     plt.show()
 
     plt.figure(figsize=(8, 6))
@@ -359,6 +369,7 @@ def graficar_pascal(size):
     plt.xlabel('Cantidad de fracasos antes de lograr {} éxitos'.format(r))
     plt.ylabel('Frecuencia')
     plt.tight_layout()
+    plt.savefig(f'./images/TP2.2/pascal densidad.png')
     plt.show()
 
 def graficar_poisson(size):
@@ -418,6 +429,7 @@ def graficar_poisson(size):
     plt.xlabel('Valor (última clase = resto)')
     plt.ylabel('Frecuencia observada')
     plt.tight_layout()
+    plt.savefig(f'./images/TP2.2/poisson histograma.png')
     plt.show()
 
     plt.figure(figsize=(8, 6))
@@ -426,6 +438,7 @@ def graficar_poisson(size):
     plt.title(f'Distribución de Poisson (μ = {mu})')
     plt.xlabel('Valor (última clase = resto)')
     plt.ylabel('Probabilidad teórica')
+    plt.savefig(f'./images/TP2.2/poisson densidad.png')
     plt.tight_layout()
     plt.show()
 
@@ -467,6 +480,7 @@ def graficar_uniforme(size):
     plt.title('Distribución Uniforme Discreta [{} - {})'.format(a, b))
     plt.xlabel('Valor')
     plt.ylabel('Frecuencia')
+    plt.savefig(f'./images/TP2.2/uniforme histograma.png')
     plt.tight_layout()
     plt.show()
 
@@ -475,6 +489,7 @@ def graficar_uniforme(size):
     plt.title('Distribución Uniforme Discreta [{} - {})'.format(a, b))
     plt.xlabel('Valor')
     plt.ylabel('Frecuencia')
+    plt.savefig(f'./images/TP2.2/uniforme densidad.png')
     plt.tight_layout()
     plt.show()
 
