@@ -242,29 +242,32 @@ def graficar_hipergeometrica(n, size):
     plt.tight_layout()
     plt.show()
 
-    test_chi_cuadrado_hipergeometrica(n, size, N, K)
+    test_chi_cuadrado_hipergeometrica(n, size, N, K, samples)
 
 def test_chi_cuadrado_hipergeometrica(n, size, N, K, samples):
     valores_posibles = np.arange(max(0, n + K - N), min(K, n) + 1)
 
     observadas = np.array([np.sum(samples == k) for k in valores_posibles])
-
     prob_teoricas = hypergeom.pmf(valores_posibles, M=N, n=K, N=n)
     esperadas = prob_teoricas * size
+
     mask = esperadas >= 5
     observadas_validas = observadas[mask]
     esperadas_validas = esperadas[mask]
 
-    # Aplicar test
-    chi_stat, p_valor = chisquare(f_obs=observadas_validas, f_exp=esperadas_validas)
+    # Ajustar suma de observadas para que coincida con esperadas
+    factor_ajuste = esperadas_validas.sum() / observadas_validas.sum()
+    observadas_validas_ajustadas = observadas_validas * factor_ajuste
+
+    chi_stat, p_valor = chisquare(f_obs=observadas_validas_ajustadas, f_exp=esperadas_validas)
 
     print("Estadístico chi-cuadrado:", chi_stat)
     print("Valor p:", p_valor)
     alpha = 0.05
     if p_valor < alpha:
-      print("No supera el test")
+        print("No supera el test")
     else:
-      print("Supera el test")
+        print("Supera el test")
 
 def graficar_normal(size):
     # Parámetros de la distribución normal
@@ -394,11 +397,15 @@ def graficar_poisson(size):
         esperadas[idx_last] += diferencia
 
     # Test chi-cuadrado
-    chi2_stat, p_value = chisquare(f_obs=observadas[mask], f_exp=esperadas[mask])
+    estadistico, p_valor = chisquare(f_obs=observadas[mask], f_exp=esperadas[mask])
 
-    print("Chi² =", chi2_stat)
-    print("p-value =", p_value)
-    print("✅ H0 NO se rechaza" if p_value >= 0.05 else "❌ Se rechaza H0")
+    print("Estadístico chi-cuadrado:", estadistico)
+    print("Valor p:", p_valor)
+    alpha = 0.05
+    if p_valor < alpha:
+        print("No supera el test")
+    else:
+        print("Supera el test")
 
     # Gráficos
     etiquetas = list(map(str, valores_posibles)) + [f"{cutoff}+"]
@@ -502,15 +509,14 @@ p = 0.41
 size = 1000
 lamba = 1
 
-#graficar_binomial(n, p, size)
-#graficar_empirica_discreta(size)
-#graficar_exponencial(size, lamba)
-#graficar_gamma(size)
-# n = 100
-# size = 10000
-# graficar_hipergeometrica(n, size)
-#graficar_normal(size)
-# graficar_pascal(size)
-# size = 1000
-# graficar_poisson(size) # arreglar test chi cuadrado
+graficar_binomial(n, p, size)
+graficar_empirica_discreta(size)
+graficar_exponencial(size, lamba)
+graficar_gamma(size)
+n = 100
+size = 10000
+graficar_hipergeometrica(n, size)
+graficar_normal(size)
+graficar_pascal(size)
+size = 1000
 graficar_poisson(size)
