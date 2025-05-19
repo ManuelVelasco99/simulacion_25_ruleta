@@ -497,7 +497,7 @@ def test_chi_cuadrado_uniforme(size, a=0, b=10):
 
 n = 100
 p = 0.41
-size = 10000
+size = 1000
 lamba = 1
 
 graficar_binomial(n, p, size)
