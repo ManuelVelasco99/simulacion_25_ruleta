@@ -29,9 +29,9 @@ def graficar_binomial(n, p, size):
     # Histograma
     plt.figure(figsize=(8, 6))
     sns.histplot(samples, bins=30, kde=False, color='skyblue')
-    plt.title('Histograma de muestras binomiales (n=100, p=0.41)')
+    plt.title('Histograma para la distribución binomial')
     plt.xlabel('Número de éxitos')
-    plt.ylabel('Frecuencia')
+    plt.ylabel('Frecuencia absoulta')
     plt.tight_layout()
     plt.savefig(f'./images/TP2.2/binomial histograma.png')
     plt.show()
@@ -40,10 +40,9 @@ def graficar_binomial(n, p, size):
     plt.figure(figsize=(8, 6))
     x = np.arange(binom.ppf(0.0001, n, p), binom.ppf(0.999, n, p))
     plt.plot(x, binom.pmf(x, n, p), '-r', ms=2)
-    plt.title('Histograma de una variable aleatoria discreta con distribucion binomial')
+    plt.title('Función de densidad para la distribución binomial')#'Histograma de una variable aleatoria discreta con distribucion binomial
     plt.xlabel('Valor de la variable')
-    plt.ylabel('Ocurrencias')
-    plt.ylabel("Densidad de ocurrencias")
+    plt.ylabel("Frecuendia relativa")
     plt.savefig(f'./images/TP2.2/binomial densidad.png')
     plt.show()
 
@@ -56,9 +55,9 @@ def graficar_empirica_discreta(size):
     # Histograma (gráfico de barras porque es discreta)
     plt.figure(figsize=(8, 6))
     sns.countplot(x=samples, color='skyblue')
-    plt.title('Histograma de muestra empírica discreta')
+    plt.title('Histograma para la distribución empírica discreta')
     plt.xlabel('Valor')
-    plt.ylabel('Frecuencia')
+    plt.ylabel('Frecuencia absoluta')
     plt.savefig(f'./images/TP2.2/empirica discreta histograma.png')
     plt.tight_layout()
     plt.show()
@@ -68,9 +67,9 @@ def graficar_empirica_discreta(size):
     valores, cuentas = np.unique(samples, return_counts=True)
     probabilidades = cuentas / len(samples)
     plt.stem(valores, probabilidades, basefmt=" ")
-    plt.title('Distribución de probabilidad empírica')
+    plt.title('Densidad para la distribución empírica discreta')
     plt.xlabel('Valor')
-    plt.ylabel('Probabilidad estimada')
+    plt.ylabel('Frecuencia relativa')
     plt.savefig(f'./images/TP2.2/empirica discreta densidad.png')
     plt.tight_layout()
     plt.show()
@@ -113,9 +112,9 @@ def graficar_exponencial(n, lamda):
 
     # Histograma + curva teórica
     sns.histplot(samples, bins=50, kde=False, color='skyblue')
-    plt.title('Histograma de muestra exponencial')
+    plt.title('Histograma para la distribución exponencial')
     plt.xlabel('Valor')
-    plt.ylabel('Densidad')
+    plt.ylabel('Frecuencia absoluta')
     plt.tight_layout()
     plt.savefig(f'./images/TP2.2/exponencial histograma.png')
     plt.show()
@@ -123,9 +122,9 @@ def graficar_exponencial(n, lamda):
     plt.figure(figsize=(8, 6))
     x = np.linspace(0, np.max(samples), 1000)
     plt.plot(x, expon.pdf(x, scale=scale_param), color='red')
-    plt.title('Funcion de densidad')
+    plt.title('Función de densidad para la distribución exponencial')
     plt.xlabel('Valor')
-    plt.ylabel('Densidad')
+    plt.ylabel('Frecuencia relativa')
     plt.tight_layout()
     plt.savefig(f'./images/TP2.2/exponencial densidad.png')
     plt.show()
@@ -173,18 +172,18 @@ def graficar_gamma(n):
     # Histograma + función densidad teórica
     sns.histplot(samples, bins=50, kde=False, color='skyblue')
 
-    plt.title('Histograma de muestra gamma')
+    plt.title('Histograma para la distribución gamma')
     plt.xlabel('Valor')
-    plt.ylabel('Densidad')
+    plt.ylabel('Frecuencia absoluta')
     plt.savefig(f'./images/TP2.2/gamma histograma.png')
     plt.tight_layout()
     plt.show()
 
     x = np.linspace(0, np.max(samples), 1000)
     plt.plot(x, gamma.pdf(x, a=shape_k, scale=scale_theta), color='red')
-    plt.title('Histograma de muestra gamma')
+    plt.title('Función de densidad para la distribución gamma')
     plt.xlabel('Valor')
-    plt.ylabel('Densidad')
+    plt.ylabel('Frecuencia relativa')
     plt.savefig(f'./images/TP2.2/gamma densidad.png')
     plt.tight_layout()
     plt.show()
@@ -216,39 +215,44 @@ def test_chi_cuadrado_gamma(n, k=2, theta=2, bins=10):
     else:
       print("Supera el test")
 
+
+
 def graficar_hipergeometrica(n, size):
     N = 500      # tamaño de la población
     K = 200      # número de éxitos en la población
 
     # Generar muestras
     samples = hypergeom.rvs(M=N, n=K, N=n, size=size)
-    # Valores posibles que puede tomar la variable
-    valores_posibles = np.arange(hypergeom.ppf(0.0001, N, K, n), hypergeom.ppf(0.9999, N, K, n) + 1).astype(int)
-    observadas = np.array([np.sum(samples == k) for k in valores_posibles])
 
-    prob_teoricas = hypergeom.pmf(valores_posibles, M=N, n=K, N=n)
-    proporciones_esperadas = prob_teoricas  # ya son proporciones
-
+    # Crear histograma real a partir de los datos individuales
     plt.figure(figsize=(8, 6))
-    plt.bar(valores_posibles, observadas, width=0.4, color='skyblue', align='center')
-    plt.title('Distribución hipergeométrica (proporciones)')
+    plt.hist(samples, bins=np.arange(samples.min(), samples.max()+2)-0.5,
+             color='skyblue', edgecolor='black')
+    plt.title('Histograma para la distribución Hipergeométrica')
     plt.xlabel('Número de éxitos en la muestra')
     plt.ylabel('Frecuencia absoluta')
-    plt.xticks(valores_posibles)
-    plt.savefig(f'./images/TP2.2/hipergeometrica histograma.png')
+    plt.xticks(np.arange(samples.min(), samples.max()+1))
     plt.tight_layout()
+    plt.savefig('./images/TP2.2/hipergeometrica_histograma.png')
     plt.show()
 
+    # Calcular valores teóricos para la distribución
+    valores_posibles = np.arange(hypergeom.ppf(0.0001, N, K, n), 
+                                 hypergeom.ppf(0.9999, N, K, n) + 1).astype(int)
+    proporciones_esperadas = hypergeom.pmf(valores_posibles, M=N, n=K, N=n)
+
+    # Gráfico de la función de masa de probabilidad (teórica)
     plt.figure(figsize=(8, 6))
     plt.plot(valores_posibles, proporciones_esperadas, color='red', linewidth=2)
-    plt.title('Distribución hipergeométrica (proporciones)')
+    plt.title('Función de densidad para la distribución Hipergeométrica')
     plt.xlabel('Número de éxitos en la muestra')
     plt.ylabel('Frecuencia relativa')
-    plt.savefig(f'./images/TP2.2/hipergeometrica densidad.png')
     plt.xticks(valores_posibles)
     plt.tight_layout()
+    plt.savefig('./images/TP2.2/hipergeometrica_densidad.png')
     plt.show()
 
+    # Llamar a función de prueba estadística (si existe)
     test_chi_cuadrado_hipergeometrica(n, size, N, K, samples)
 
 def test_chi_cuadrado_hipergeometrica(n, size, N, K, samples):
@@ -288,10 +292,10 @@ def graficar_normal(size):
     plt.figure(figsize=(8, 6))
 
     # Histograma con densidad normalizada
-    _, bins, _ = plt.hist(samples, bins=30, alpha=0.6, color='blue', label='Histograma (normalizado)')
-    plt.title('Distribución normal: histograma y densidad')
+    _, bins, _ = plt.hist(samples, bins=30, alpha=0.6, color='blue', label='Histograma (normalizado)', edgecolor='black')
+    plt.title('Histograma para la distribución normal')
     plt.xlabel('Valor')
-    plt.ylabel('Densidad')
+    plt.ylabel('Frecuencia absoluta')
     plt.savefig(f'./images/TP2.2/normal histograma.png')
     plt.tight_layout()
     plt.show()
@@ -301,9 +305,9 @@ def graficar_normal(size):
     # Superponer la PDF teórica
     x = np.linspace(min(bins), max(bins), 1000)
     plt.plot(x, norm.pdf(x, loc=mu, scale=sigma), 'r-', lw=2)
-    plt.title('Distribución normal: histograma y densidad')
+    plt.title('Función de densidad de la distribución normal')
     plt.xlabel('Valor')
-    plt.ylabel('Densidad')
+    plt.ylabel('Frecuencia relativa')
     plt.savefig(f'./images/TP2.2/normal densidad.png')
     plt.tight_layout()
     plt.show()
@@ -343,123 +347,91 @@ def graficar_pascal(size):
     # Generar muestras
     samples = nbinom.rvs(r, p, size=size)
 
-    # Obtener valores posibles en el rango observado
-    valores_posibles = np.arange(0, samples.max() + 1)
-
-    # Frecuencia observada
-    observadas = np.array([np.sum(samples == k) for k in valores_posibles])
-
-    # PMF teórica y frecuencias esperadas
-    pmf = nbinom.pmf(valores_posibles, r, p)
-    esperadas = pmf * size
-
-    # === Gráfico ===
+    # === Histograma real ===
     plt.figure(figsize=(8, 6))
-    plt.bar(valores_posibles, observadas, color='skyblue', width=0.5)
-    plt.title('Distribución de Pascal (Binomial Negativa)')
+    plt.hist(samples, bins=np.arange(samples.min(), samples.max() + 2) - 0.5,
+             color='skyblue', edgecolor='black')
+    plt.title('Histograma para la distribución Pascal (Binomial Negativa)')
     plt.xlabel('Cantidad de fracasos antes de lograr {} éxitos'.format(r))
-    plt.ylabel('Frecuencia')
+    plt.ylabel('Frecuencia absoluta')
+    plt.xticks(np.arange(samples.min(), samples.max() + 1))
     plt.tight_layout()
-    plt.savefig(f'./images/TP2.2/pascal histograma.png')
+    plt.savefig('./images/TP2.2/pascal_histograma.png')
     plt.show()
+
+    # === Gráfico de la distribución teórica (PMF) ===
+    valores_posibles = np.arange(0, samples.max() + 1)
+    pmf = nbinom.pmf(valores_posibles, r, p)
 
     plt.figure(figsize=(8, 6))
     plt.plot(valores_posibles, pmf, 'r-', linewidth=2)
-    plt.title('Distribución de Pascal (Binomial Negativa)')
+    plt.title('Función de densidad de la distribución Pascal (Binomial Negativa)')
     plt.xlabel('Cantidad de fracasos antes de lograr {} éxitos'.format(r))
-    plt.ylabel('Frecuencia')
+    plt.ylabel('Frecuencia relativa')
+    plt.xticks(valores_posibles)
     plt.tight_layout()
-    plt.savefig(f'./images/TP2.2/pascal densidad.png')
+    plt.savefig('./images/TP2.2/pascal_densidad.png')
     plt.show()
+
 
 def graficar_poisson(size):
     mu = 3
     samples = poisson.rvs(mu, size=size)
 
-    # Punto de corte para agrupar la cola
+    # === Histograma real ===
+    plt.figure(figsize=(8, 6))
+    plt.hist(samples, bins=np.arange(samples.min(), samples.max() + 2) - 0.5,
+             color='skyblue', edgecolor='black')
+    plt.title(f'Histograma para la distribución de Poisson (μ = {mu})')
+    plt.xlabel('Valores')
+    plt.ylabel('Frecuencia absoluta')
+    plt.xticks(np.arange(samples.min(), samples.max() + 1))
+    plt.tight_layout()
+    plt.savefig('./images/TP2.2/poisson_histograma.png')
+    plt.show()
+
+    # === Preparación para test chi-cuadrado ===
     cutoff = max(10, samples.max())
     valores_posibles = np.arange(0, cutoff)
-
-    # Observadas
     observadas = np.array([np.sum(samples == k) for k in valores_posibles])
     observadas = np.append(observadas, np.sum(samples >= cutoff))
 
-    # Esperadas
     pmf = poisson.pmf(valores_posibles, mu)
     ultima_prob = 1 - poisson.cdf(cutoff - 1, mu)
     pmf = np.append(pmf, ultima_prob)
     esperadas = pmf * size
 
-    # Crear máscara antes del ajuste
     mask = esperadas >= 5
-
-    # Ajustar esperadas solo para los valores enmascarados
     obs_sum = observadas[mask].sum()
     exp_sum = esperadas[mask].sum()
-
-    # Reescalar esperadas[mask] y sobreescribir en esperadas
     escala = obs_sum / exp_sum
     esperadas[mask] *= escala
-
-    # Corregir última celda enmascarada para forzar igualdad exacta
     diferencia = observadas[mask].sum() - esperadas[mask].sum()
     if abs(diferencia) > 1e-10:
         idx_last = np.where(mask)[0][-1]
         esperadas[idx_last] += diferencia
 
-    # Test chi-cuadrado
     estadistico, p_valor = chisquare(f_obs=observadas[mask], f_exp=esperadas[mask])
-
     print("Estadístico chi-cuadrado:", estadistico)
     print("Valor p:", p_valor)
-    alpha = 0.05
-    if p_valor < alpha:
-        print("No supera el test")
-    else:
-        print("Supera el test")
+    print("✅ Supera el test" if p_valor >= 0.05 else "❌ No supera el test")
 
-    # Gráficos
+    # === Gráfico de barras (frecuencias observadas agrupadas) ===
     etiquetas = list(map(str, valores_posibles)) + [f"{cutoff}+"]
     x = np.arange(len(etiquetas))
 
-    plt.figure(figsize=(8, 6))
-    plt.bar(x, observadas, color='skyblue')
-    plt.xticks(x, etiquetas, rotation=45)
-    plt.title(f'Distribución de Poisson (μ = {mu})')
-    plt.xlabel('Valor (última clase = resto)')
-    plt.ylabel('Frecuencia observada')
-    plt.tight_layout()
-    plt.savefig(f'./images/TP2.2/poisson histograma.png')
-    plt.show()
-
+    # === Densidad teórica ===
     plt.figure(figsize=(8, 6))
     plt.plot(x, pmf, 'r-', linewidth=2)
     plt.xticks(x, etiquetas, rotation=45)
-    plt.title(f'Distribución de Poisson (μ = {mu})')
-    plt.xlabel('Valor (última clase = resto)')
-    plt.ylabel('Probabilidad teórica')
-    plt.savefig(f'./images/TP2.2/poisson densidad.png')
+    plt.title(f'Función de densdidad de la distribución de Poisson (μ = {mu})')
+    plt.xlabel('Valor')
+    plt.ylabel('Frecuencia relativa')
     plt.tight_layout()
+    plt.savefig('./images/TP2.2/poisson_densidad.png')
     plt.show()
 
-def test_chi_cuadrado_poisson(n, mu):
-    muestras = poisson.rvs(mu, size=n)
 
-    valores = np.arange(0, muestras.max() + 1)
-    observadas = np.array([np.sum(muestras == k) for k in valores])
-
-    probabilidades = poisson.pmf(valores, mu)
-    esperadas = probabilidades * n
-
-    # Ajustar esperadas para que sumen lo mismo que observadas
-    esperadas *= observadas.sum() / esperadas.sum()
-
-    # Filtrar clases con esperadas < 5
-    mask = esperadas >= 5
-    chi2_stat, p_value = chisquare(observadas[mask], f_exp=esperadas[mask])
-    print("Chi² =", chi2_stat)
-    print("p-value =", p_value)
-    print("✅ H0 NO se rechaza" if p_value >= 0.05 else "❌ Se rechaza H0")
 
 def graficar_uniforme(size):
     # Parámetros
@@ -469,32 +441,36 @@ def graficar_uniforme(size):
     # Generar muestras
     samples = randint.rvs(a, b, size=size)
 
-    valores_posibles = np.arange(a, b)
-    observadas = np.array([np.sum(samples == k) for k in valores_posibles])
-    pmf = randint.pmf(valores_posibles, a, b)
-    esperadas = pmf * size
-
-    # Gráfico
+    # === Histograma absoluto ===
     plt.figure(figsize=(8, 6))
-    plt.bar(valores_posibles, observadas, color='lightgreen')
-    plt.title('Distribución Uniforme Discreta [{} - {})'.format(a, b))
+    plt.hist(samples, bins=np.arange(a, b + 1) - 0.5, 
+             color='lightgreen', edgecolor='black')
+    plt.title('Histograma para la distribución Uniforme Discreta [{} - {}]'.format(a, b))
     plt.xlabel('Valor')
-    plt.ylabel('Frecuencia')
-    plt.savefig(f'./images/TP2.2/uniforme histograma.png')
+    plt.ylabel('Frecuencia absoluta')
+    plt.xticks(np.arange(a, b))
     plt.tight_layout()
+    plt.savefig(f'./images/TP2.2/uniforme_histograma.png')
     plt.show()
 
+    # === Gráfico de frecuencias relativas ===
+    valores_posibles = np.arange(a, b)
+    hist, _ = np.histogram(samples, bins=np.arange(a, b + 1))
+    frecuencia_relativa = hist / size
 
-    plt.plot(valores_posibles, pmf, 'r-', linewidth=2)
-    plt.title('Distribución Uniforme Discreta [{} - {})'.format(a, b))
+    plt.figure(figsize=(8, 6))
+    plt.plot(valores_posibles, frecuencia_relativa, 'r-', linewidth=2)
+    plt.title('Función de densdidad de la distribución Uniforme discreta [{} - {})'.format(a, b))
     plt.xlabel('Valor')
-    plt.ylabel('Frecuencia')
-    plt.savefig(f'./images/TP2.2/uniforme densidad.png')
+    plt.ylabel('Frecuencia relativa')
+    plt.xticks(valores_posibles)
+    plt.ylim(0, max(frecuencia_relativa) * 1.1)
     plt.tight_layout()
+    plt.savefig(f'./images/TP2.2/uniforme_frecuencia_relativa.png')
     plt.show()
 
+    # Test chi-cuadrado
     test_chi_cuadrado_uniforme(size, a, b)
-
 
 def test_chi_cuadrado_uniforme(size, a=0, b=10):
     muestras = randint.rvs(a, b, size=size)
@@ -521,17 +497,15 @@ def test_chi_cuadrado_uniforme(size, a=0, b=10):
 
 n = 100
 p = 0.41
-size = 1000
+size = 10000
 lamba = 1
 
 graficar_binomial(n, p, size)
 graficar_empirica_discreta(size)
 graficar_exponencial(size, lamba)
 graficar_gamma(size)
-n = 100
-size = 10000
 graficar_hipergeometrica(n, size)
 graficar_normal(size)
 graficar_pascal(size)
-size = 1000
 graficar_poisson(size)
+graficar_uniforme(size)
