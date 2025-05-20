@@ -219,7 +219,7 @@ def test_chi_cuadrado_gamma(n, k=2, theta=2, bins=10):
 
 def graficar_hipergeometrica(n, size):
     N = 500      # tamaño de la población
-    K = 200      # número de éxitos en la población
+    K = 50      # número de éxitos en la población
 
     # Generar muestras
     samples = hypergeom.rvs(M=N, n=K, N=n, size=size)
@@ -237,7 +237,7 @@ def graficar_hipergeometrica(n, size):
     plt.show()
 
     # Calcular valores teóricos para la distribución
-    valores_posibles = np.arange(hypergeom.ppf(0.0001, N, K, n), 
+    valores_posibles = np.arange(hypergeom.ppf(0.0001, N, K, n),
                                  hypergeom.ppf(0.9999, N, K, n) + 1).astype(int)
     proporciones_esperadas = hypergeom.pmf(valores_posibles, M=N, n=K, N=n)
 
@@ -282,7 +282,7 @@ def test_chi_cuadrado_hipergeometrica(n, size, N, K, samples):
 
 def graficar_normal(size):
     # Parámetros de la distribución normal
-    mu = 10
+    mu = 1
     sigma = 2
 
     # Generar muestras normales
@@ -341,7 +341,7 @@ def test_chi_cuadrado_normal(n, mu=10, sigma=2, bins=10):
 
 def graficar_pascal(size):
     # Parámetros de la distribución de Pascal (binomial negativa)
-    r = 5        # número de éxitos deseados
+    r = 10        # número de éxitos deseados
     p = 0.4      # probabilidad de éxito
 
     # Generar muestras
@@ -382,7 +382,7 @@ def graficar_poisson(size):
     plt.figure(figsize=(8, 6))
     plt.hist(samples, bins=np.arange(samples.min(), samples.max() + 2) - 0.5,
              color='skyblue', edgecolor='black')
-    plt.title(f'Histograma para la distribución de Poisson (μ = {mu})')
+    plt.title(f'Histograma para la distribución de Poisson')
     plt.xlabel('Valores')
     plt.ylabel('Frecuencia absoluta')
     plt.xticks(np.arange(samples.min(), samples.max() + 1))
@@ -412,9 +412,15 @@ def graficar_poisson(size):
         esperadas[idx_last] += diferencia
 
     estadistico, p_valor = chisquare(f_obs=observadas[mask], f_exp=esperadas[mask])
+
     print("Estadístico chi-cuadrado:", estadistico)
     print("Valor p:", p_valor)
-    print("✅ Supera el test" if p_valor >= 0.05 else "❌ No supera el test")
+
+    alpha = 0.05
+    if p_valor < alpha:
+      print("No supera el test")
+    else:
+      print("Supera el test")
 
     # === Gráfico de barras (frecuencias observadas agrupadas) ===
     etiquetas = list(map(str, valores_posibles)) + [f"{cutoff}+"]
@@ -424,7 +430,7 @@ def graficar_poisson(size):
     plt.figure(figsize=(8, 6))
     plt.plot(x, pmf, 'r-', linewidth=2)
     plt.xticks(x, etiquetas, rotation=45)
-    plt.title(f'Función de densdidad de la distribución de Poisson (μ = {mu})')
+    plt.title(f'Función de densdidad de la distribución de Poisson')
     plt.xlabel('Valor')
     plt.ylabel('Frecuencia relativa')
     plt.tight_layout()
@@ -435,17 +441,17 @@ def graficar_poisson(size):
 
 def graficar_uniforme(size):
     # Parámetros
-    a = 0
-    b = 10  # genera valores de 0 a 9
+    a = 10
+    b = 20  # genera valores de 0 a 9
 
     # Generar muestras
     samples = randint.rvs(a, b, size=size)
 
     # === Histograma absoluto ===
     plt.figure(figsize=(8, 6))
-    plt.hist(samples, bins=np.arange(a, b + 1) - 0.5, 
+    plt.hist(samples, bins=np.arange(a, b + 1) - 0.5,
              color='lightgreen', edgecolor='black')
-    plt.title('Histograma para la distribución Uniforme Discreta [{} - {}]'.format(a, b))
+    plt.title('Histograma para la distribución Uniforme Discreta')
     plt.xlabel('Valor')
     plt.ylabel('Frecuencia absoluta')
     plt.xticks(np.arange(a, b))
@@ -460,7 +466,7 @@ def graficar_uniforme(size):
 
     plt.figure(figsize=(8, 6))
     plt.plot(valores_posibles, frecuencia_relativa, 'r-', linewidth=2)
-    plt.title('Función de densdidad de la distribución Uniforme discreta [{} - {})'.format(a, b))
+    plt.title('Función de densdidad de la distribución Uniforme')
     plt.xlabel('Valor')
     plt.ylabel('Frecuencia relativa')
     plt.xticks(valores_posibles)
@@ -500,12 +506,12 @@ p = 0.41
 size = 1000
 lamba = 1
 
-graficar_binomial(n, p, size)
-graficar_empirica_discreta(size)
+graficar_uniforme(size)
 graficar_exponencial(size, lamba)
 graficar_gamma(size)
-graficar_hipergeometrica(n, size)
 graficar_normal(size)
 graficar_pascal(size)
+graficar_binomial(n, p, size)
+graficar_hipergeometrica(n, size)
 graficar_poisson(size)
-graficar_uniforme(size)
+graficar_empirica_discreta(size)
