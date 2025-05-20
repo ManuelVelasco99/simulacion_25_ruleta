@@ -215,8 +215,6 @@ def test_chi_cuadrado_gamma(n, k=2, theta=2, bins=10):
     else:
       print("Supera el test")
 
-
-
 def graficar_hipergeometrica(n, size):
     N = 500      # tamaño de la población
     K = 50      # número de éxitos en la población
