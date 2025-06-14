@@ -1,6 +1,6 @@
 {
     "initial_inv_level": 60,
-    "num_months": 12,
+    "num_months": 120,
 
     "mean_interdemand": 0.1,
 
@@ -24,7 +24,5 @@
 
         {"smalls": 60, "bigs": 80},
         {"smalls": 60, "bigs": 100}
-
-
     ]
 }

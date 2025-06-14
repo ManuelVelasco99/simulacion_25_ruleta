@@ -3,7 +3,7 @@ import random
 import pandas as pd
 import matplotlib.pyplot as plt
 
-Q_LIMIT = int(input('Ingrese capacidad maxima de la cola: '))
+Q_LIMIT = 2#int(input('Ingrese capacidad maxima de la cola: '))
 BUSY = 1    # Indica si el servidor esta ocupado
 IDLE = 0    # Indica si el servidor esta inactivo
 
@@ -195,9 +195,9 @@ def main():
     global num_delays_required, mean_interarrival, mean_service, num_events
     # Ingreso de la media de entre llegadas, la media del servicio y el número de retrasos necesarios
 
-    mean_interarrival = float(input("Ingrese el tiempo promedio entre arribos: "))
-    mean_service = float(input("Ingrese el tiempo promedio de servicio: "))
-    num_delays_required = int(input("Ingrese la cantidad de clientes: "))
+    mean_interarrival = 2#float(input("Ingrese el tiempo promedio entre arribos: "))
+    mean_service = 0.5#float(input("Ingrese el tiempo promedio de servicio: "))
+    num_delays_required = 1000#int(input("Ingrese la cantidad de clientes: "))
     num_events = 2
 
     sum_Average_delay_in_queue = 0
@@ -206,7 +206,7 @@ def main():
     sum_Average_number_of_customers_in_the_system = 0
     sum_Average_time_in_the_system = 0
     sum_Rejection_probabilty = 0
-    for i in range(10):
+    for i in range(30):
         print('Corrida ',i+1,'/10')
         simulation()
         sum_Average_delay_in_queue += round(total_of_delays / num_custs_delayed, 3)
@@ -222,6 +222,10 @@ def main():
     print('Espera promedio en cola: ',sum_Average_delay_in_queue/10)
     print('Utilizacion del servidor: ', sum_Server_utilization/10)
     print('Probabilidad de rechazo por cola llena: ',sum_Rejection_probabilty/10)
+    print('Tiempo de simulación: ', sim_time)
+    print('Número de clientes atendidos: ', num_custs_delayed)
+    print('Número de rechazos: ', num_rejections)
+    print('Número de clientes en el sistema: ', num_in_system)
 
     if input('Mostrar graficas? [y/n] ') == 'y':
         size_queue.plot(x='time', y='size', kind='line', title="tamaño de la cola en el tiempo")
